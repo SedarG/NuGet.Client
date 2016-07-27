@@ -143,45 +143,26 @@ namespace NuGet.PackageManagement.UI
             // Keep a single gather cache across projects
             var gatherCache = new GatherCache();
 
-            foreach (var project in uiService.Projects)
-            {
-                var installedPackages = await project.GetInstalledPackagesAsync(token);
-                HashSet<string> packageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                foreach (var p in installedPackages)
-                {
-                    packageIds.Add(p.PackageIdentity.Id);
-                }
+            var includePrerelease = packagesToUpdate.Where(
+                package => package.Version.IsPrerelease).Any();
 
-                // We need to filter out packages from packagesToUpdate that are not installed
-                // in the current project. Otherwise, we'll incorrectly install a
-                // package that is not installed before.
-                var packagesToUpdateInProject = packagesToUpdate.Where(
-                    package => packageIds.Contains(package.Id)).ToList();
+            var resolutionContext = new ResolutionContext(
+                uiService.DependencyBehavior,
+                includePrelease: includePrerelease,
+                includeUnlisted: true,
+                versionConstraints: VersionConstraints.None,
+                gatherCache: gatherCache);
 
-                if (packagesToUpdateInProject.Any())
-                {
-                    var includePrerelease = packagesToUpdateInProject.Where(
-                        package => package.Version.IsPrerelease).Any();
-
-                    var resolutionContext = new ResolutionContext(
-                        uiService.DependencyBehavior,
-                        includePrelease: includePrerelease,
-                        includeUnlisted: true,
-                        versionConstraints: VersionConstraints.None,
-                        gatherCache: gatherCache);
-
-                    var actions = await _packageManager.PreviewUpdatePackagesAsync(
-                        packagesToUpdateInProject,
-                        project,
-                        resolutionContext,
-                        uiService.ProgressWindow,
-                        uiService.ActiveSources,
-                        uiService.ActiveSources,
-                        token);
-                    resolvedActions.AddRange(actions.Select(action => new ResolvedAction(project, action))
-                        .ToList());
-                }
-            }
+            var actions = await _packageManager.PreviewUpdatePackagesAsync(
+                packagesToUpdate,
+                uiService.Projects,
+                resolutionContext,
+                uiService.ProgressWindow,
+                uiService.ActiveSources,
+                uiService.ActiveSources,
+                token);
+//            /*resolvedActions.AddRange(actions.Select(action => new ResolvedAction(uiService.Projects., action))
+//            */    .ToList());
 
             return resolvedActions;
         }

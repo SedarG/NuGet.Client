@@ -43,6 +43,8 @@ namespace NuGet.PackageManagement
 
         private Configuration.ISettings Settings { get; }
 
+        private IList<BuildIntegratedNuGetProject> SortedProjectsToUpdate { get; set; }
+
         public IDeleteOnRestartManager DeleteOnRestartManager { get; }
 
         public FolderNuGetProject PackagesFolderNuGetProject { get; set; }
@@ -365,7 +367,7 @@ namespace NuGet.PackageManagement
         }
 
         public Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesAsync(
-            NuGetProject nuGetProject,
+            IEnumerable<NuGetProject> nuGetProjects,
             ResolutionContext resolutionContext,
             INuGetProjectContext nuGetProjectContext,
             IEnumerable<SourceRepository> primarySources,
@@ -375,7 +377,7 @@ namespace NuGet.PackageManagement
             return PreviewUpdatePackagesAsync(
                 packageId: null,
                 packageIdentities: new List<PackageIdentity>(),
-                nuGetProject: nuGetProject,
+                nuGetProjects: nuGetProjects,
                 resolutionContext: resolutionContext,
                 nuGetProjectContext: nuGetProjectContext,
                 primarySources: primarySources,
@@ -385,7 +387,7 @@ namespace NuGet.PackageManagement
 
         public Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesAsync(
             string packageId,
-            NuGetProject nuGetProject,
+            IEnumerable<NuGetProject> nuGetProjects,
             ResolutionContext resolutionContext,
             INuGetProjectContext nuGetProjectContext,
             IEnumerable<SourceRepository> primarySources,
@@ -395,7 +397,7 @@ namespace NuGet.PackageManagement
             return PreviewUpdatePackagesAsync(
                 packageId: packageId,
                 packageIdentities: new List<PackageIdentity>(),
-                nuGetProject: nuGetProject,
+                nuGetProjects: nuGetProjects,
                 resolutionContext: resolutionContext,
                 nuGetProjectContext: nuGetProjectContext,
                 primarySources: primarySources,
@@ -405,7 +407,7 @@ namespace NuGet.PackageManagement
 
         public Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesAsync(
             PackageIdentity packageIdentity,
-            NuGetProject nuGetProject,
+            IEnumerable<NuGetProject> nuGetProjects,
             ResolutionContext resolutionContext,
             INuGetProjectContext nuGetProjectContext,
             IEnumerable<SourceRepository> primarySources,
@@ -415,7 +417,7 @@ namespace NuGet.PackageManagement
             return PreviewUpdatePackagesAsync(
                 packageId: null,
                 packageIdentities: new List<PackageIdentity> { packageIdentity },
-                nuGetProject: nuGetProject,
+                nuGetProjects: nuGetProjects,
                 resolutionContext: resolutionContext,
                 nuGetProjectContext: nuGetProjectContext,
                 primarySources: primarySources,
@@ -425,7 +427,7 @@ namespace NuGet.PackageManagement
 
         public Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesAsync(
             List<PackageIdentity> packageIdentities,
-            NuGetProject nuGetProject,
+            IEnumerable<NuGetProject> nuGetProjects,
             ResolutionContext resolutionContext,
             INuGetProjectContext nuGetProjectContext,
             IEnumerable<SourceRepository> primarySources,
@@ -435,7 +437,7 @@ namespace NuGet.PackageManagement
             return PreviewUpdatePackagesAsync(
                 packageId: null,
                 packageIdentities: packageIdentities,
-                nuGetProject: nuGetProject,
+                nuGetProjects: nuGetProjects,
                 resolutionContext: resolutionContext,
                 nuGetProjectContext: nuGetProjectContext,
                 primarySources: primarySources,
@@ -446,16 +448,16 @@ namespace NuGet.PackageManagement
         private async Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesAsync(
                 string packageId,
                 List<PackageIdentity> packageIdentities,
-                NuGetProject nuGetProject,
+                IEnumerable<NuGetProject> nuGetProjects,
                 ResolutionContext resolutionContext,
                 INuGetProjectContext nuGetProjectContext,
                 IEnumerable<SourceRepository> primarySources,
                 IEnumerable<SourceRepository> secondarySources,
                 CancellationToken token)
         {
-            if (nuGetProject == null)
+            if (nuGetProjects == null)
             {
-                throw new ArgumentNullException(nameof(nuGetProject));
+                throw new ArgumentNullException(nameof(nuGetProjects));
             }
 
             if (resolutionContext == null)
@@ -478,32 +480,43 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(secondarySources));
             }
 
-            if (nuGetProject is INuGetIntegratedProject)
+            var tasks = new List<Task<IEnumerable<NuGetProjectAction>>>();
+
+            foreach (var project in nuGetProjects)
             {
-                // project.json based projects are handled here
-                return await PreviewUpdatePackagesForBuildIntegratedAsync(
-                    packageId,
-                    packageIdentities,
-                    nuGetProject,
-                    resolutionContext,
-                    nuGetProjectContext,
-                    primarySources,
-                    secondarySources,
-                    token);
+                if (project is INuGetIntegratedProject)
+                {
+                    // project.json based projects are handled here
+                    tasks.Add(Task.Run(async ()
+                        => await PreviewUpdatePackagesForBuildIntegratedAsync(
+                            packageId,
+                            packageIdentities,
+                            project,
+                            resolutionContext,
+                            nuGetProjectContext,
+                            primarySources,
+                            secondarySources,
+                            token)));
+                }
+                else
+                {
+                    // otherwise classic style packages.config style projects are handled here
+                    tasks.Add(Task.Run(async ()
+                        => await PreviewUpdatePackagesForClassicAsync(
+                            packageId,
+                            packageIdentities,
+                            project,
+                            resolutionContext,
+                            nuGetProjectContext,
+                            primarySources,
+                            secondarySources,
+                            token)));
+                }
             }
-            else
-            {
-                // otherwise classic style packages.config style projects are handled here
-                return await PreviewUpdatePackagesForClassicAsync(
-                    packageId,
-                    packageIdentities,
-                    nuGetProject,
-                    resolutionContext,
-                    nuGetProjectContext,
-                    primarySources,
-                    secondarySources,
-                    token);
-            }
+
+            var actions = await Task.WhenAll(tasks);
+
+            return actions.SelectMany(value => value);
         }
 
         /// <summary>
@@ -580,29 +593,32 @@ namespace NuGet.PackageManagement
 
                 if (packageIdentities.Count == 0)
                 {
-                    NuGetVersion latestVersion = await GetLatestVersionAsync(
-                        packageId,
-                        nuGetProject,
-                        resolutionContext,
-                        primarySources,
-                        log,
-                        token);
-
-                    if (latestVersion == null)
-                    {
-                        throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.UnknownPackage, packageId));
-                    }
-
                     var installedPackageReference = projectInstalledPackageReferences
-                        .Where(pr => StringComparer.OrdinalIgnoreCase.Equals(pr.PackageIdentity.Id, packageId))
-                        .FirstOrDefault();
+                        .First(pr => StringComparer.OrdinalIgnoreCase.Equals(pr.PackageIdentity.Id, packageId));
 
-                    if (installedPackageReference.PackageIdentity.Version > latestVersion)
+                    if (installedPackageReference != null)
                     {
-                        throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.NewerVersionAlreadyReferenced, packageId));
-                    }
+                        NuGetVersion latestVersion = await GetLatestVersionAsync(
+                            packageId,
+                            nuGetProject,
+                            resolutionContext,
+                            primarySources,
+                            log,
+                            token);
 
-                    packageIdentities.Add(new PackageIdentity(packageId, latestVersion));
+                        if (latestVersion == null)
+                        {
+                            throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.UnknownPackage, packageId));
+                        }
+
+                        if (installedPackageReference.PackageIdentity.Version > latestVersion)
+                        {
+                            throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
+                                Strings.NewerVersionAlreadyReferenced, packageId));
+                        }
+
+                        packageIdentities.Add(new PackageIdentity(packageId, latestVersion));
+                    }
                 }
 
                 // process the list of PackageIdentities
@@ -624,23 +640,26 @@ namespace NuGet.PackageManagement
                     }
                 }
 
-                var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
-
-                if (buildIntegratedProject != null)
+                if (lowLevelActions.Count > 0)
                 {
-                    // Create a build integrated action
-                    var buildIntegratedAction = await PreviewBuildIntegratedProjectActionsAsync(
-                        buildIntegratedProject,
-                        lowLevelActions,
-                        nuGetProjectContext,
-                        token);
+                    var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
 
-                    actions.Add(buildIntegratedAction);
-                }
-                else
-                {
-                    // Use the low level actions for projectK
-                    actions.AddRange(lowLevelActions);
+                    if (buildIntegratedProject != null)
+                    {
+                        // Create a build integrated action
+                        var buildIntegratedAction = await PreviewBuildIntegratedProjectActionsAsync(
+                            buildIntegratedProject,
+                            lowLevelActions,
+                            nuGetProjectContext,
+                            token);
+
+                        actions.Add(buildIntegratedAction);
+                    }
+                    else
+                    {
+                        // Use the low level actions for projectK
+                        actions.AddRange(lowLevelActions);
+                    }
                 }
             }
 
@@ -682,7 +701,7 @@ namespace NuGet.PackageManagement
             if (packageIdentities.Count > 0)
             {
                 primaryTargets = new List<PackageIdentity>();
-                primaryTargetIds = packageIdentities.Select(p => p.Id);
+                primaryTargetIds = new List<string>();
 
                 // If we have been given explicit PackageIdentities to install then we will naturally prefer that
                 foreach (var packageIdentity in packageIdentities)
@@ -690,6 +709,8 @@ namespace NuGet.PackageManagement
                     // Just a check to make sure the preferredVersions created from the existing package list actually contains the target
                     if (preferredVersions.ContainsKey(packageIdentity.Id))
                     {
+                        ((List<string>)primaryTargetIds).Add(packageIdentity.Id);
+
                         // If there was a version specified we will prefer that version
                         if (packageIdentity.HasVersion)
                         {
@@ -707,16 +728,19 @@ namespace NuGet.PackageManagement
             // We have just been given the package id, in which case we will look for the highest version and attempt to move to that
             else if (packageId != null)
             {
-                if (PrunePackageTree.IsExactVersion(resolutionContext.VersionConstraints))
+                if (preferredVersions.ContainsKey(packageId))
                 {
-                    primaryTargets = new[] { preferredVersions[packageId] };
-                }
-                else
-                {
-                    primaryTargetIds = new[] { packageId };
+                    if (PrunePackageTree.IsExactVersion(resolutionContext.VersionConstraints))
+                    {
+                        primaryTargets = new[] {preferredVersions[packageId]};
+                    }
+                    else
+                    {
+                        primaryTargetIds = new[] {packageId};
 
-                    // If we have been given just a package Id we certainly don't want the one installed - pruning will be significant
-                    preferredVersions.Remove(packageId);
+                        // If we have been given just a package Id we certainly don't want the one installed - pruning will be significant
+                        preferredVersions.Remove(packageId);
+                    }
                 }
             }
             // We are apply update logic to the complete project - attempting to resolver all updates together
@@ -1620,6 +1644,49 @@ namespace NuGet.PackageManagement
         }
 
         /// <summary>
+        /// Executes the list of <paramref name="nuGetProjectActions" /> on list of <paramref name="nuGetProjects" /> , which is
+        /// likely obtained by calling into
+        /// <see
+        ///     cref="PreviewInstallPackageAsync(IEnumerable{NuGetProject},string,ResolutionContext,INuGetProjectContext,SourceRepository,IEnumerable{SourceRepository},CancellationToken)" />
+        /// <paramref name="nuGetProjectContext" /> is used in the process.
+        /// </summary>
+        public async Task ExecuteNuGetProjectActionsAsync(IEnumerable<NuGetProject> nuGetProjects,
+            IEnumerable<NuGetProjectAction> nuGetProjectActions,
+            INuGetProjectContext nuGetProjectContext,
+            CancellationToken token)
+        {
+            var projects = nuGetProjects.ToList();
+            var projectsToUpdate = projects.OfType<BuildIntegratedNuGetProject>().ToList();
+            var sortedProjectsToUpdate = projects.Except(projectsToUpdate).ToList();
+
+            if (projectsToUpdate.Count > 0)
+            {
+                var logger = new ProjectContextLogger(nuGetProjectContext);
+                var referenceContext = new ExternalProjectReferenceContext(logger);
+
+                var allBuildIntegratedProjects =
+                    SolutionManager.GetNuGetProjects().OfType<BuildIntegratedNuGetProject>().ToList();
+
+                SortedProjectsToUpdate = new List<BuildIntegratedNuGetProject>();
+
+                foreach (var project in projectsToUpdate)
+                {
+                    await BuildIntegratedRestoreUtility.GetChildProjectsInClosure(project, allBuildIntegratedProjects,
+                        SortedProjectsToUpdate, referenceContext);
+                }
+                sortedProjectsToUpdate.AddRange(SortedProjectsToUpdate);
+            }
+
+            foreach (var project in sortedProjectsToUpdate)
+            {
+                await ExecuteNuGetProjectActionsAsync(project, nuGetProjectActions, nuGetProjectContext, token);
+            }
+
+            SortedProjectsToUpdate.Clear();
+
+        }
+
+        /// <summary>
         /// Executes the list of <paramref name="nuGetProjectActions" /> on <paramref name="nuGetProject" /> , which is
         /// likely obtained by calling into
         /// <see
@@ -1825,7 +1892,7 @@ namespace NuGet.PackageManagement
                             msbuildProject.MSBuildNuGetProjectSystem.EndProcessing();
                         }
                     }
-                    
+
                 }
 
                 if (exceptionInfo != null)
@@ -2158,15 +2225,18 @@ namespace NuGet.PackageManagement
 
                 foreach (var parent in parents)
                 {
-                    // Restore and commit the lock file to disk regardless of the result
-                    var parentResult = await BuildIntegratedRestoreUtility.RestoreAsync(
-                        parent,
-                        referenceContext,
-                        projectAction.Sources,
-                        pathContext.UserPackageFolder,
-                        pathContext.FallbackPackageFolders,
-                        cacheContextModifier,
-                        token);
+                    if (SortedProjectsToUpdate == null || !SortedProjectsToUpdate.Any(project => project.Equals(parent)))
+                    {
+                        // Restore and commit the lock file to disk regardless of the result
+                        var parentResult = await BuildIntegratedRestoreUtility.RestoreAsync(
+                            parent,
+                            referenceContext,
+                            projectAction.Sources,
+                            pathContext.UserPackageFolder,
+                            pathContext.FallbackPackageFolders,
+                            cacheContextModifier,
+                            token);
+                    }
                 }
             }
             else

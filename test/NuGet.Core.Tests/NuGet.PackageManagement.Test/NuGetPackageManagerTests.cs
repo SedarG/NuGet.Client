@@ -1307,7 +1307,7 @@ namespace NuGet.Test
 
                 var result = await nuGetPackageManager.PreviewUpdatePackagesAsync(
                     targets,
-                    nuGetProject,
+                    new List<NuGetProject> { nuGetProject },
                     new ResolutionContext(),
                     new TestNuGetProjectContext(),
                     sourceRepositoryProvider.GetRepositories(),
@@ -2258,7 +2258,7 @@ namespace NuGet.Test
 
                 // Main Act
                 var packageActions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(
-                    msBuildNuGetProject,
+                    new List<NuGetProject> { msBuildNuGetProject },
                     new ResolutionContext(DependencyBehavior.Highest, false, true, VersionConstraints.None),
                     new TestNuGetProjectContext(),
                     sourceRepositoryProvider.GetRepositories(),
@@ -2317,7 +2317,7 @@ namespace NuGet.Test
                 // Main Act
                 var result = await nuGetPackageManager.PreviewUpdatePackagesAsync(
                     "a",
-                    nuGetProject,
+                    new List<NuGetProject> { nuGetProject },
                     new ResolutionContext(),
                     new TestNuGetProjectContext(),
                     sourceRepositoryProvider.GetRepositories(),
@@ -2373,7 +2373,7 @@ namespace NuGet.Test
 
                 // Main Act
                 var result = await nuGetPackageManager.PreviewUpdatePackagesAsync(
-                    nuGetProject,
+                    new List<NuGetProject> { nuGetProject },
                     new ResolutionContext(),
                     new TestNuGetProjectContext(),
                     sourceRepositoryProvider.GetRepositories(),
@@ -2431,7 +2431,7 @@ namespace NuGet.Test
                 // Main Act
                 var result = await nuGetPackageManager.PreviewUpdatePackagesAsync(
                     "b",
-                    nuGetProject,
+                    new List<NuGetProject> { nuGetProject },
                     new ResolutionContext(),
                     new TestNuGetProjectContext(),
                     sourceRepositoryProvider.GetRepositories(),
@@ -2512,7 +2512,7 @@ namespace NuGet.Test
 
                 var result = await nuGetPackageManager.PreviewUpdatePackagesAsync(
                     targets,
-                    nuGetProject,
+                    new List<NuGetProject> { nuGetProject },
                     new ResolutionContext(),
                     new TestNuGetProjectContext(),
                     sourceRepositoryProvider.GetRepositories(),
@@ -2740,7 +2740,7 @@ namespace NuGet.Test
                 {
                     await nuGetPackageManager.PreviewUpdatePackagesAsync(
                         targets,
-                        nuGetProject,
+                        new List<NuGetProject> { nuGetProject },
                         new ResolutionContext(),
                         new TestNuGetProjectContext(),
                         sourceRepositoryProvider.GetRepositories(),
@@ -2810,7 +2810,7 @@ namespace NuGet.Test
                 {
                     await nuGetPackageManager.PreviewUpdatePackagesAsync(
                         targets,
-                        nuGetProject,
+                        new List<NuGetProject> { nuGetProject },
                         new ResolutionContext(),
                         new TestNuGetProjectContext(),
                         sourceRepositoryProvider.GetRepositories(),
@@ -2876,7 +2876,7 @@ namespace NuGet.Test
 
                 // Main Act
                 var packageActions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(
-                    msBuildNuGetProject,
+                    new List<NuGetProject> { msBuildNuGetProject },
                     new ResolutionContext(DependencyBehavior.Highest, false, true, VersionConstraints.None),
                     new TestNuGetProjectContext(),
                     sourceRepositoryProvider.GetRepositories(),
@@ -2955,7 +2955,7 @@ namespace NuGet.Test
 
                 // Main Act
                 var packageActions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(
-                    msBuildNuGetProject,
+                    new List<NuGetProject> { msBuildNuGetProject },
                     resolutionContext,
                     new TestNuGetProjectContext(),
                     sourceRepositoryProvider.GetRepositories(),
@@ -3044,7 +3044,7 @@ namespace NuGet.Test
 
                 // Act
                 var packageActions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(
-                    msBuildNuGetProject,
+                    new List<NuGetProject> { msBuildNuGetProject },
                     resolutionContext,
                     new TestNuGetProjectContext(),
                     sourceRepositoryProvider.GetRepositories(),
@@ -3174,7 +3174,7 @@ namespace NuGet.Test
 
                 var result = await nuGetPackageManager.PreviewUpdatePackagesAsync(
                     "b",
-                    nuGetProject,
+                    new List<NuGetProject> { nuGetProject },
                     resolutionContext,
                     new TestNuGetProjectContext(),
                     sourceRepositoryProvider.GetRepositories(),
@@ -3631,7 +3631,7 @@ namespace NuGet.Test
 
                 // Main Act
                 var nuGetProjectActions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(
-                    msBuildNuGetProject,
+                    new List<NuGetProject> { msBuildNuGetProject },
                     resolutionContext,
                     testNuGetProjectContext,
                     sourceRepositoryProvider.GetRepositories(),
@@ -3714,7 +3714,7 @@ namespace NuGet.Test
 
                 // Main Act
                 var nuGetProjectActions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(
-                    msBuildNuGetProject,
+                    new List<NuGetProject> { msBuildNuGetProject },
                     resolutionContext,
                     testNuGetProjectContext,
                     sourceRepositoryProvider.GetRepositories(),
@@ -3762,7 +3762,7 @@ namespace NuGet.Test
                 // Update ALL - this should not fail - it should no-op
 
                 var nuGetProjectActions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(
-                    msBuildNuGetProject,
+                    new List<NuGetProject> { msBuildNuGetProject },
                     resolutionContext,
                     testNuGetProjectContext,
                     Enumerable.Empty<SourceRepository>(),

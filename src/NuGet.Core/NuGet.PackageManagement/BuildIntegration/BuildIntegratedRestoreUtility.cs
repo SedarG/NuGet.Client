@@ -444,5 +444,46 @@ namespace NuGet.PackageManagement
 
             return closure;
         }
+
+        public static async Task GetChildProjectsInClosure(BuildIntegratedNuGetProject target,
+            IList<BuildIntegratedNuGetProject> projects,
+            IList<BuildIntegratedNuGetProject> orderedChilds,
+            ExternalProjectReferenceContext referenceContext)
+        {
+            if (projects == null)
+            {
+                throw new ArgumentNullException(nameof(projects));
+            }
+
+            if (target == null)
+            {
+                throw new ArgumentNullException(nameof(target));
+            }
+
+            if (!orderedChilds.Contains(target))
+            {
+                var closure = await target.GetProjectReferenceClosureAsync(referenceContext);
+
+                if (closure.Count > 0)
+                {
+                    foreach (var dependency in closure)
+                    {
+                        if (dependency.PackageSpecPath != null)
+                        {
+                            var depProject = projects.First(
+                                proj =>
+                                    StringComparer.OrdinalIgnoreCase.Equals(proj.JsonConfigPath,
+                                        dependency.PackageSpecPath));
+
+                            if (depProject != null && !orderedChilds.Contains(depProject))
+                            {
+                                await GetChildProjectsInClosure(depProject, projects, orderedChilds, referenceContext);
+                            }
+                        }
+                    }
+                }
+                orderedChilds.Add(target);
+            }
+        }
     }
 }
