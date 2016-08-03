@@ -20,6 +20,9 @@ namespace NuGet.Commands
         public static readonly int DefaultDegreeOfConcurrency = 16;
         private readonly bool _disposeProviders;
 
+        /// <summary>
+        /// This overload should only be used by test code.
+        /// </summary>
         public RestoreRequest(
             PackageSpec project,
             IEnumerable<PackageSource> sources,
@@ -34,6 +37,9 @@ namespace NuGet.Commands
         {
         }
 
+        /// <summary>
+        /// This overload should only be used by test code.
+        /// </summary>
         public RestoreRequest(
             PackageSpec project,
             IEnumerable<PackageSource> sources,
@@ -49,22 +55,29 @@ namespace NuGet.Commands
         {
         }
 
+        /// <summary>
+        /// This overload should only be used by test code.
+        /// </summary>
         public RestoreRequest(
             PackageSpec project,
             IEnumerable<SourceRepository> sources,
             string packagesDirectory,
             IEnumerable<string> fallbackPackageFolders,
-            ILogger log)
-            : this(project,
-                  RestoreCommandProviders.Create(packagesDirectory,
-                    fallbackPackageFolders,
+            ILogger log) : this(
+                project,
+                RestoreCommandProviders.Create(
+                    new VersionPackageFolder(packagesDirectory, lowercase: true),
+                    fallbackPackageFolders.Select(path => new VersionPackageFolder(path, lowercase: true)),
                     sources,
                     new SourceCacheContext(),
                     log),
-                  log)
+                log)
         {
         }
 
+        /// <summary>
+        /// This overload should only be used by test code.
+        /// </summary>
         public RestoreRequest(
             PackageSpec project,
             RestoreCommandProviders dependencyProviders,
@@ -99,7 +112,7 @@ namespace NuGet.Commands
             ExternalProjects = new List<ExternalProjectReference>();
             CompatibilityProfiles = new HashSet<FrameworkRuntimePair>();
 
-            PackagesDirectory = dependencyProviders.GlobalPackages.RepositoryRoot;
+            Folder = dependencyProviders.GlobalPackages.Folder;
 
             Log = log;
 
@@ -118,7 +131,7 @@ namespace NuGet.Commands
         /// <summary>
         /// The directory in which to install packages
         /// </summary>
-        public string PackagesDirectory { get; }
+        public VersionPackageFolder Folder { get; }
 
         /// <summary>
         /// A list of projects provided by external build systems (i.e. MSBuild)

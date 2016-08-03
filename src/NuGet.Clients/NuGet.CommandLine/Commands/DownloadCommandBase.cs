@@ -11,6 +11,7 @@ using System.Xml.Linq;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine
 {
@@ -119,11 +120,11 @@ namespace NuGet.CommandLine
             if (!NoCache)
             {
                 // Add the v3 global packages folder
-                var globalPackageFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
+                var globalPackageFolder = SettingsUtility.GetGlobalPackagesFolder(settings, lowercase: true);
 
-                if (!string.IsNullOrEmpty(globalPackageFolder) && Directory.Exists(globalPackageFolder))
+                if (Directory.Exists(globalPackageFolder.Path))
                 {
-                    packageSources.Add(new FeedTypePackageSource(globalPackageFolder, FeedType.FileSystemV3));
+                    packageSources.Add(new FeedTypePackageSource(globalPackageFolder.Path, globalPackageFolder.GetFeedType()));
                 }
             }
 

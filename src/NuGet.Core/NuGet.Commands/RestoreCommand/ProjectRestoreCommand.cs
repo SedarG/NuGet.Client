@@ -70,7 +70,7 @@ namespace NuGet.Commands
             }
 
             await InstallPackagesAsync(graphs,
-                _request.PackagesDirectory,
+                _request.Folder,
                 allInstalledPackages,
                 _request.MaxDegreeOfConcurrency,
                 token);
@@ -126,7 +126,7 @@ namespace NuGet.Commands
 
                 // Install runtime-specific packages
                 await InstallPackagesAsync(runtimeGraphs,
-                    _request.PackagesDirectory,
+                    _request.Folder,
                     allInstalledPackages,
                     _request.MaxDegreeOfConcurrency,
                     token);
@@ -241,7 +241,7 @@ namespace NuGet.Commands
         }
 
         private async Task InstallPackagesAsync(IEnumerable<RestoreTargetGraph> graphs,
-            string packagesDirectory,
+            VersionPackageFolder folder,
             HashSet<LibraryIdentity> allInstalledPackages,
             int maxDegreeOfConcurrency,
             CancellationToken token)
@@ -251,7 +251,7 @@ namespace NuGet.Commands
             {
                 foreach (var match in packagesToInstall)
                 {
-                    await InstallPackageAsync(match, packagesDirectory, token);
+                    await InstallPackageAsync(match, folder, token);
                 }
             }
             else
@@ -263,20 +263,20 @@ namespace NuGet.Commands
                         RemoteMatch match;
                         while (bag.TryTake(out match))
                         {
-                            await InstallPackageAsync(match, packagesDirectory, token);
+                            await InstallPackageAsync(match, folder, token);
                         }
                     });
                 await Task.WhenAll(tasks);
             }
         }
 
-        private async Task InstallPackageAsync(RemoteMatch installItem, string packagesDirectory, CancellationToken token)
+        private async Task InstallPackageAsync(RemoteMatch installItem, VersionPackageFolder folder, CancellationToken token)
         {
             var packageIdentity = new PackageIdentity(installItem.Library.Name, installItem.Library.Version);
 
             var versionFolderPathContext = new VersionFolderPathContext(
                 packageIdentity,
-                packagesDirectory,
+                folder,
                 _logger,
                 packageSaveMode: _request.PackageSaveMode,
                 xmlDocFileSaveMode: _request.XmlDocFileSaveMode);

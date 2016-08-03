@@ -19,7 +19,7 @@ namespace NuGet.Commands
 
         public virtual Task<IReadOnlyList<RestoreSummaryRequest>> CreateRequests(
             string inputPath,
-            RestoreArgs restoreContext)
+            RestoreArgs restoreArgs)
         {
             var paths = new List<string>();
             var requests = new List<RestoreSummaryRequest>();
@@ -37,7 +37,7 @@ namespace NuGet.Commands
                     var request = Create(
                         entryPoint,
                         msbuildProvider,
-                        restoreContext,
+                        restoreArgs,
                         settingsOverride: null);
 
                     requests.Add(request);
@@ -63,38 +63,40 @@ namespace NuGet.Commands
         protected virtual RestoreSummaryRequest Create(
             ExternalProjectReference project,
             MSBuildProjectReferenceProvider msbuildProvider,
-            RestoreArgs restoreContext,
+            RestoreArgs restoreArgs,
             ISettings settingsOverride)
         {
-            // Get settings relative to the input file
-            var rootPath = Path.GetDirectoryName(project.PackageSpecPath);
-
             var settings = settingsOverride;
 
             if (settings == null)
             {
-                settings = restoreContext.GetSettings(rootPath);
+                // Get settings relative to the input file
+                var rootPath = Path.GetDirectoryName(project.PackageSpecPath);
+                settings = restoreArgs.GetSettings(rootPath);
             }
 
-            var globalPath = restoreContext.GetEffectiveGlobalPackagesFolder(rootPath, settings);
-            var fallbackPaths = restoreContext.GetEffectiveFallbackPackageFolders(settings);
+            var globalPath = restoreArgs.GetEffectiveGlobalPackagesFolder(
+                settings,
+                lowercase: restoreArgs.LowercaseGlobalPackagesFolder);
 
-            var sources = restoreContext.GetEffectiveSources(settings);
+            var fallbackPaths = restoreArgs.GetEffectiveFallbackPackageFolders(settings);
+
+            var sources = restoreArgs.GetEffectiveSources(settings);
 
             var sharedCache = _providerCache.GetOrCreate(
                 globalPath,
                 fallbackPaths,
                 sources,
-                restoreContext.CacheContext,
-                restoreContext.Log);
+                restoreArgs.CacheContext,
+                restoreArgs.Log);
 
             var request = new RestoreRequest(
                 project.PackageSpec,
                 sharedCache,
-                restoreContext.Log,
+                restoreArgs.Log,
                 disposeProviders: false);
 
-            restoreContext.ApplyStandardProperties(request);
+            restoreArgs.ApplyStandardProperties(request);
 
             // Find all external references
             var externalReferences = msbuildProvider.GetReferences(project.MSBuildProjectPath).ToList();

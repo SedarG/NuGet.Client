@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -19,11 +19,8 @@ namespace NuGet.Packaging.Test
             using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 var userFolder = Path.Combine(mockBaseDirectory, "global");
-                var fallbackFolders = new List<string>()
-                {
-                };
-
-                var resolver = new FallbackPackagePathResolver(userFolder, fallbackFolders);
+                var fallbackFolders = new List<string>();
+                var resolver = GetTarget(userFolder, fallbackFolders);
 
                 // Act
                 var path = resolver.GetPackageDirectory("a", "1.0.0");
@@ -53,7 +50,7 @@ namespace NuGet.Packaging.Test
                     Directory.CreateDirectory(fallback);
                 }
 
-                var resolver = new FallbackPackagePathResolver(userFolder, fallbackFolders);
+                var resolver = GetTarget(userFolder, fallbackFolders);
 
                 // Act
                 var path = resolver.GetPackageDirectory("a", "1.0.0");
@@ -79,8 +76,7 @@ namespace NuGet.Packaging.Test
                 Directory.CreateDirectory(userFolder);
 
                 // Act & Assert
-                Assert.ThrowsAny<PackagingException>(() =>
-                    new FallbackPackagePathResolver(userFolder, fallbackFolders));
+                Assert.ThrowsAny<PackagingException>(() => GetTarget(userFolder, fallbackFolders));
             }
         }
 
@@ -113,7 +109,7 @@ namespace NuGet.Packaging.Test
 
                 var expected = Path.Combine(userFolder, "a", "1.0.0");
 
-                var resolver = new FallbackPackagePathResolver(userFolder, fallbackFolders);
+                var resolver = GetTarget(userFolder, fallbackFolders);
 
                 // Act
                 var path = resolver.GetPackageDirectory("a", "1.0.0");
@@ -154,7 +150,7 @@ namespace NuGet.Packaging.Test
 
                 var expected = Path.Combine(targetFolder, "a", "1.0.0");
 
-                var resolver = new FallbackPackagePathResolver(userFolder, fallbackFolders);
+                var resolver = GetTarget(userFolder, fallbackFolders);
 
                 // Act
                 var path = resolver.GetPackageDirectory("a", "1.0.0");
@@ -195,7 +191,7 @@ namespace NuGet.Packaging.Test
 
                 var expected = Path.Combine(targetFolder, "a", "1.0.0");
 
-                var resolver = new FallbackPackagePathResolver(userFolder, fallbackFolders);
+                var resolver = GetTarget(userFolder, fallbackFolders);
 
                 // Act
                 var path = resolver.GetPackageDirectory("a", "1.0.0");
@@ -247,13 +243,13 @@ namespace NuGet.Packaging.Test
                 // Remove hashes from the first two folders
                 foreach (var root in new[] { userFolder, fallbackFolders[0] })
                 {
-                    var localResolver = new VersionFolderPathResolver(root);
+                    var localResolver = new VersionFolderPathResolver(root, lowercase: true);
                     File.Delete(localResolver.GetHashPath("a", NuGetVersion.Parse("1.0.0")));
                 }
 
                 var expected = Path.Combine(targetFolder, "a", "1.0.0");
 
-                var resolver = new FallbackPackagePathResolver(userFolder, fallbackFolders);
+                var resolver = GetTarget(userFolder, fallbackFolders);
 
                 // Act
                 var path = resolver.GetPackageDirectory("a", "1.0.0");
@@ -261,6 +257,13 @@ namespace NuGet.Packaging.Test
                 // Assert
                 Assert.Equal(expected, path);
             }
+        }
+
+        private static FallbackPackagePathResolver GetTarget(string userPackagesFolder, IEnumerable<string> fallbackFolders)
+        {
+            return new FallbackPackagePathResolver(
+                new VersionPackageFolder(userPackagesFolder, lowercase: true),
+                fallbackFolders.Select(path => new VersionPackageFolder(path, lowercase: true)));
         }
     }
 }

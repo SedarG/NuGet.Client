@@ -239,10 +239,18 @@ namespace NuGet.Protocol
             ILogger log,
             CancellationToken token)
         {
-            return await GetDownloadResultUtility.GetDownloadResultAsync(_httpSource, package, downloadUri, settings, log, token);
+            return await GetDownloadResultUtility.GetDownloadResultAsync(
+                _httpSource,
+                package,
+                downloadUri,
+                settings,
+                lowercase: true,
+                logger: log,
+                token: token);
         }
 
-        public async Task<DownloadResourceResult> DownloadFromIdentity(PackageIdentity package,
+        public async Task<DownloadResourceResult> DownloadFromIdentity(
+            PackageIdentity package,
             ISettings settings,
             ILogger log,
             CancellationToken token)
@@ -254,7 +262,14 @@ namespace NuGet.Protocol
                 return new DownloadResourceResult(DownloadResourceResultStatus.NotFound);
             }
 
-            return await GetDownloadResultUtility.GetDownloadResultAsync(_httpSource, package, new Uri(packageInfo.DownloadUrl), settings, log, token);
+            return await GetDownloadResultUtility.GetDownloadResultAsync(
+                _httpSource,
+                package,
+                new Uri(packageInfo.DownloadUrl),
+                settings,
+                lowercase: true,
+                logger: log,
+                token: token);
         }
 
         /// <summary>

@@ -4,6 +4,7 @@
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Packaging;
 
 namespace NuGet.Test.Utility
@@ -27,7 +28,7 @@ namespace NuGet.Test.Utility
             {
                 var pathContext = new VersionFolderPathContext(
                     package: reader.GetIdentity(),
-                    packagesDirectory: globalFolder,
+                    folder: new VersionPackageFolder(globalFolder, lowercase: true),
                     logger: Common.NullLogger.Instance,
                     packageSaveMode: PackageSaveMode.Defaultv3,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None);

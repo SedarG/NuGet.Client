@@ -233,8 +233,7 @@ namespace NuGetVSExtension
                     await RestoreBuildIntegratedProjectsAsync(
                         solutionDirectory,
                         buildEnabledProjects.ToList(),
-                        forceRestore,
-                        isSolutionAvailable);
+                        forceRestore);
 
                 }, JoinableTaskCreationOptions.LongRunning);
             }
@@ -296,31 +295,12 @@ namespace NuGetVSExtension
         private async Task RestoreBuildIntegratedProjectsAsync(
             string solutionDirectory,
             List<BuildIntegratedProjectSystem> buildEnabledProjects,
-            bool forceRestore,
-            bool isSolutionAvailable)
+            bool forceRestore)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             if (buildEnabledProjects.Any() && IsConsentGranted(Settings))
             {
-                if (!isSolutionAvailable)
-                {
-                    var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(Settings);
-                    if (!Path.IsPathRooted(globalPackagesFolder))
-                    {
-                        var message = string.Format(
-                            CultureInfo.CurrentCulture,
-                            NuGet.PackageManagement.VisualStudio.Strings.RelativeGlobalPackagesFolder,
-                            globalPackagesFolder);
-
-                        WriteLine(VerbosityLevel.Quiet, message);
-
-                        // Cannot restore packages since globalPackagesFolder is a relative path
-                        // and the solution is not available
-                        return;
-                    }
-                }
-
                 var enabledSources = SourceRepositoryProvider.GetRepositories().ToList();
 
                 // Cache p2ps discovered from DTE 
@@ -469,17 +449,17 @@ namespace NuGetVSExtension
                 }
 
                 // Read package folder locations
-                var nugetPaths = NuGetPathContext.Create(Settings);
-                var packageFolderPaths = new List<string>();
+                var nugetPaths = NuGetPathContext.Create(Settings, lowercase: true);
+                var folders = new List<VersionPackageFolder>();
 
                 // Folder paths must be in order of priority
-                packageFolderPaths.Add(nugetPaths.UserPackageFolder);
-                packageFolderPaths.AddRange(nugetPaths.FallbackPackageFolders);
+                folders.Add(nugetPaths.UserPackageFolder);
+                folders.AddRange(nugetPaths.FallbackPackageFolders);
 
                 // Verify all packages exist and have the expected hashes
                 var restoreRequired = BuildIntegratedRestoreUtility.IsRestoreRequired(
                     projects,
-                    packageFolderPaths,
+                    folders,
                     referenceContext);
 
                 if (restoreRequired)
@@ -518,7 +498,7 @@ namespace NuGetVSExtension
 
             var projectName = NuGetProject.GetUniqueNameOrName(project);
 
-            var nugetPathContext = NuGetPathContext.Create(Settings);
+            var nugetPathContext = NuGetPathContext.Create(Settings, lowercase: true);
 
             using (var cacheContext = new SourceCacheContext())
             {
@@ -534,7 +514,7 @@ namespace NuGetVSExtension
                     context,
                     enabledSources,
                     nugetPathContext.UserPackageFolder,
-                     nugetPathContext.FallbackPackageFolders,
+                    nugetPathContext.FallbackPackageFolders,
                     token);
 
                 if (!restoreResult.Success)

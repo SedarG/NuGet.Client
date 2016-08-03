@@ -20,19 +20,20 @@ namespace Commands.Test
         public async Task PackageExpander_ExpandsPackage()
         {
             // Arrange
+            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             using (var package = TestPackages.GetNearestReferenceFilteringPackage())
             {
                 var version = new NuGetVersion(package.Version);
                 var identity = new PackageIdentity(package.Id, version);
 
-                var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
-                var pathResolver = new VersionFolderPathResolver(packagesDir);
+                var folder = new VersionPackageFolder(packagesDirectory, lowercase: true);
+                var pathResolver = new VersionFolderPathResolver(folder);
 
                 var token = CancellationToken.None;
                 var logger = NullLogger.Instance;
                 var versionFolderPathContext = new VersionFolderPathContext(
                     identity,
-                    packagesDir,
+                    folder,
                     logger,
                     packageSaveMode: PackageSaveMode.Defaultv3,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None);
@@ -61,20 +62,20 @@ namespace Commands.Test
         public async Task PackageExpander_ExpandsPackage_WithNupkgCopy()
         {
             // Arrange
+            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             using (var package = TestPackages.GetPackageWithNupkgCopy())
             {
-
                 var version = new NuGetVersion(package.Version);
                 var identity = new PackageIdentity(package.Id, version);
 
-                var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
-                var pathResolver = new VersionFolderPathResolver(packagesDir);
+                var folder = new VersionPackageFolder(packagesDirectory, lowercase: true);
+                var pathResolver = new VersionFolderPathResolver(folder);
 
                 var token = CancellationToken.None;
                 var logger = NullLogger.Instance;
                 var versionFolderPathContext = new VersionFolderPathContext(
                     identity,
-                    packagesDir,
+                    folder,
                     logger,
                     packageSaveMode: PackageSaveMode.Defaultv3,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None);
@@ -82,9 +83,10 @@ namespace Commands.Test
                 // Act
                 using (var stream = package.File.OpenRead())
                 {
-                    await PackageExtractor.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
-                                                                   versionFolderPathContext,
-                                                                   token);
+                    await PackageExtractor.InstallFromSourceAsync(
+                        async (d) => await stream.CopyToAsync(d),
+                        versionFolderPathContext,
+                        token);
                 }
 
                 // Assert
@@ -103,19 +105,20 @@ namespace Commands.Test
         public async Task PackageExpander_ExpandsPackage_SkipsIfShaIsThere()
         {
             // Arrange
+            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             using (var package = TestPackages.GetNearestReferenceFilteringPackage())
             {
                 var version = new NuGetVersion(package.Version);
                 var identity = new PackageIdentity(package.Id, version);
 
-                var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
-                var pathResolver = new VersionFolderPathResolver(packagesDir);
+                var folder = new VersionPackageFolder(packagesDirectory, lowercase: true);
+                var pathResolver = new VersionFolderPathResolver(folder);
 
                 var token = CancellationToken.None;
                 var logger = NullLogger.Instance;
                 var versionFolderPathContext = new VersionFolderPathContext(
                     identity,
-                    packagesDir,
+                    folder,
                     logger,
                     packageSaveMode: PackageSaveMode.Defaultv3,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None);
@@ -155,19 +158,20 @@ namespace Commands.Test
         public async Task PackageExpander_CleansExtraFiles()
         {
             // Arrange
+            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             using (var package = TestPackages.GetNearestReferenceFilteringPackage())
             {
                 var version = new NuGetVersion(package.Version);
                 var identity = new PackageIdentity(package.Id, version);
 
-                var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
-                var pathResolver = new VersionFolderPathResolver(packagesDir);
+                var folder = new VersionPackageFolder(packagesDirectory, lowercase: true);
+                var pathResolver = new VersionFolderPathResolver(folder);
 
                 var token = CancellationToken.None;
                 var logger = NullLogger.Instance;
                 var versionFolderPathContext = new VersionFolderPathContext(
                     identity,
-                    packagesDir,
+                    folder,
                     logger,
                     packageSaveMode: PackageSaveMode.Defaultv3,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None);
@@ -212,19 +216,20 @@ namespace Commands.Test
         {
             // Arrange
             using (var package = TestPackages.GetNearestReferenceFilteringPackage())
+            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
 
                 var version = new NuGetVersion(package.Version);
                 var identity = new PackageIdentity(package.Id, version);
 
-                var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
-                var pathResolver = new VersionFolderPathResolver(packagesDir);
+                var folder = new VersionPackageFolder(packagesDirectory, lowercase: true);
+                var pathResolver = new VersionFolderPathResolver(folder);
 
                 var token = CancellationToken.None;
                 var logger = NullLogger.Instance;
                 var versionFolderPathContext = new VersionFolderPathContext(
                     identity,
-                    packagesDir,
+                    folder,
                     logger,
                     packageSaveMode: PackageSaveMode.Defaultv3,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None);
@@ -266,20 +271,20 @@ namespace Commands.Test
         public async Task PackageExpander_Recovers_WhenFileIsLocked()
         {
             // Arrange
+            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             using (var package = TestPackages.GetNearestReferenceFilteringPackage())
             {
-
                 var version = new NuGetVersion(package.Version);
                 var identity = new PackageIdentity(package.Id, version);
 
-                var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
-                var pathResolver = new VersionFolderPathResolver(packagesDir);
+                var folder = new VersionPackageFolder(packagesDirectory, lowercase: true);
+                var pathResolver = new VersionFolderPathResolver(folder);
 
                 var token = CancellationToken.None;
                 var logger = NullLogger.Instance;
                 var versionFolderPathContext = new VersionFolderPathContext(
                     identity,
-                    packagesDir,
+                    folder,
                     logger,
                     packageSaveMode: PackageSaveMode.Defaultv3,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None);
@@ -341,10 +346,12 @@ namespace Commands.Test
             using (var packageFileInfo = TestPackages.GetLegacyTestPackage())
             using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var pathResolver = new VersionFolderPathResolver(packagesDirectory);
+                var folder = new VersionPackageFolder(packagesDirectory, lowercase: true);
+                var pathResolver = new VersionFolderPathResolver(folder);
+
                 var versionFolderPathContext = new VersionFolderPathContext(
                     package,
-                    packagesDirectory,
+                    folder,
                     NullLogger.Instance,
                     packageSaveMode: PackageSaveMode.Defaultv3,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None);
@@ -379,10 +386,12 @@ namespace Commands.Test
             using (var packageFileInfo = TestPackages.GetLegacyTestPackage())
             using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var pathResolver = new VersionFolderPathResolver(packagesDirectory);
+                var folder = new VersionPackageFolder(packagesDirectory, lowercase: true);
+                var pathResolver = new VersionFolderPathResolver(folder);
+
                 var versionFolderPathContext = new VersionFolderPathContext(
                     package,
-                    packagesDirectory,
+                    folder,
                     NullLogger.Instance,
                     packageSaveMode: PackageSaveMode.Nuspec | PackageSaveMode.Nupkg,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None);
@@ -416,7 +425,8 @@ namespace Commands.Test
 
             using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var pathResolver = new VersionFolderPathResolver(packagesDirectory);
+                var folder = new VersionPackageFolder(packagesDirectory, lowercase: true);
+                var pathResolver = new VersionFolderPathResolver(folder);
                 var packageFileInfo = await TestPackages.GetPackageWithSHA512AtRoot(
                     packagesDirectory,
                     package.Id,
@@ -424,7 +434,7 @@ namespace Commands.Test
 
                 var versionFolderPathContext = new VersionFolderPathContext(
                     package,
-                    packagesDirectory,
+                    folder,
                     NullLogger.Instance,
                     packageSaveMode: PackageSaveMode.Defaultv3,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None);
@@ -470,7 +480,8 @@ namespace Commands.Test
             var package = new PackageIdentity("packageA", new NuGetVersion("2.0.3"));
             using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var pathResolver = new VersionFolderPathResolver(packagesDirectory);
+                var folder = new VersionPackageFolder(packagesDirectory, lowercase: true);
+                var pathResolver = new VersionFolderPathResolver(folder);
                 var packageFileInfo = await TestPackages.GetPackageWithNupkgAtRoot(
                     packagesDirectory,
                     package.Id,
@@ -478,7 +489,7 @@ namespace Commands.Test
 
                 var versionFolderPathContext = new VersionFolderPathContext(
                     package,
-                    packagesDirectory,
+                    folder,
                     NullLogger.Instance,
                     packageSaveMode: PackageSaveMode.Defaultv3,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None);
@@ -520,7 +531,8 @@ namespace Commands.Test
             var entryModifiedTime = new DateTimeOffset(1985, 11, 20, 12, 0, 0, TimeSpan.FromHours(-7.0)).DateTime;
             using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var pathResolver = new VersionFolderPathResolver(packagesDirectory);
+                var folder = new VersionPackageFolder(packagesDirectory, lowercase: true);
+                var pathResolver = new VersionFolderPathResolver(folder);
                 var packageFileInfo = await TestPackages.GeneratePackageAsync(
                     packagesDirectory,
                     package.Id,
@@ -530,7 +542,7 @@ namespace Commands.Test
 
                 var versionFolderPathContext = new VersionFolderPathContext(
                     package,
-                    packagesDirectory,
+                    folder,
                     NullLogger.Instance,
                     packageSaveMode: PackageSaveMode.Defaultv3,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None);
@@ -564,10 +576,11 @@ namespace Commands.Test
             using (var packageFileInfo = TestPackages.GetLegacyTestPackage())
             using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var pathResolver = new VersionFolderPathResolver(packagesDirectory);
+                var folder = new VersionPackageFolder(packagesDirectory, lowercase: true);
+                var pathResolver = new VersionFolderPathResolver(folder);
                 var versionFolderPathContext = new VersionFolderPathContext(
                     package,
-                    packagesDirectory,
+                    folder,
                     NullLogger.Instance,
                     packageSaveMode: PackageSaveMode.Nupkg | PackageSaveMode.Nuspec,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None);

@@ -19,7 +19,7 @@ namespace NuGet.Protocol.Core.Types
     {
         public static bool PackageExists(
             PackageIdentity packageIdentity,
-            string offlineFeed,
+            VersionPackageFolder folder,
             out bool isValidPackage)
         {
             if (packageIdentity == null)
@@ -27,12 +27,17 @@ namespace NuGet.Protocol.Core.Types
                 throw new ArgumentNullException(nameof(packageIdentity));
             }
 
-            if (string.IsNullOrEmpty(offlineFeed))
+            if (folder == null)
             {
-                throw new ArgumentNullException(nameof(offlineFeed));
+                throw new ArgumentNullException(nameof(folder));
             }
 
-            var versionFolderPathResolver = new VersionFolderPathResolver(offlineFeed);
+            if (string.IsNullOrEmpty(folder.Path))
+            {
+                throw new ArgumentNullException(nameof(folder.Path));
+            }
+
+            var versionFolderPathResolver = new VersionFolderPathResolver(folder);
             string nupkgFilePath = versionFolderPathResolver.GetPackageFilePath(packageIdentity.Id, packageIdentity.Version);
             string hashFilePath = versionFolderPathResolver.GetHashPath(packageIdentity.Id, packageIdentity.Version);
             string nuspecFilePath = versionFolderPathResolver.GetManifestFilePath(packageIdentity.Id, packageIdentity.Version);
@@ -66,9 +71,10 @@ namespace NuGet.Protocol.Core.Types
             isValidPackage = false;
             return false;
         }
-        public static string GetPackageDirectory(PackageIdentity packageIdentity, string offlineFeed)
+
+        public static string GetPackageDirectory(PackageIdentity packageIdentity, VersionPackageFolder folder)
         {
-            var versionFolderPathResolver = new VersionFolderPathResolver(offlineFeed);
+            var versionFolderPathResolver = new VersionFolderPathResolver(folder);
             return Path.GetDirectoryName(
                 versionFolderPathResolver.GetPackageFilePath(packageIdentity.Id, packageIdentity.Version));
         }
@@ -131,7 +137,7 @@ namespace NuGet.Protocol.Core.Types
             CancellationToken token)
         {
             var packagePath = offlineFeedAddContext.PackagePath;
-            var source = offlineFeedAddContext.Source;
+            var source = offlineFeedAddContext.Folder.Path;
             var logger = offlineFeedAddContext.Logger;
 
             using (var packageStream = File.OpenRead(packagePath))
@@ -142,7 +148,7 @@ namespace NuGet.Protocol.Core.Types
                     var packageIdentity = packageReader.GetIdentity();
 
                     bool isValidPackage;
-                    if (PackageExists(packageIdentity, source, out isValidPackage))
+                    if (PackageExists(packageIdentity, offlineFeedAddContext.Folder, out isValidPackage))
                     {
                         // Package already exists. Verify if it is valid
                         if (isValidPackage)
@@ -188,7 +194,7 @@ namespace NuGet.Protocol.Core.Types
 
                         var versionFolderPathContext = new VersionFolderPathContext(
                             packageIdentity,
-                            source,
+                            offlineFeedAddContext.Folder,
                             logger,
                             packageSaveMode: packageSaveMode,
                             xmlDocFileSaveMode: PackageExtractionBehavior.XmlDocFileSaveMode);

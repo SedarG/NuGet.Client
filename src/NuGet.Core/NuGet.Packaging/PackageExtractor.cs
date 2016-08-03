@@ -200,7 +200,7 @@ namespace NuGet.Packaging
                 throw new ArgumentNullException(nameof(versionFolderPathContext));
             }
 
-            var packagePathResolver = new VersionFolderPathResolver(versionFolderPathContext.PackagesDirectory);
+            var packagePathResolver = new VersionFolderPathResolver(versionFolderPathContext.Folder);
 
             var packageIdentity = versionFolderPathContext.Package;
             var logger = versionFolderPathContext.Logger;

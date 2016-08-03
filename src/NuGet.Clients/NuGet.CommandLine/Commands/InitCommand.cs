@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 
@@ -32,6 +33,7 @@ namespace NuGet.CommandLine
             // If the Destination Feed Folder does not exist, it will be created.
             OfflineFeedUtility.ThrowIfInvalid(destination);
 
+            var destinationFolder = new VersionPackageFolder(destination, lowercase: true);
             var packagePaths = GetPackageFilePaths(source, "*" + PackagingCoreConstants.NupkgExtension);
 
             if (packagePaths.Count > 0)
@@ -40,12 +42,12 @@ namespace NuGet.CommandLine
                 {
                     var offlineFeedAddContext = new OfflineFeedAddContext(
                         packagePath,
-                        destination,
-                        Console, // IConsole is an ILogger
+                        destinationFolder,
                         throwIfSourcePackageIsInvalid: false,
                         throwIfPackageExistsAndInvalid: false,
                         throwIfPackageExists: false,
-                        expand: Expand);
+                        expand: Expand,
+                        logger: Console);
 
                     await OfflineFeedUtility.AddPackageToSource(offlineFeedAddContext, CancellationToken.None);
                 }

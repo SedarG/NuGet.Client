@@ -123,7 +123,14 @@ namespace NuGet.Protocol
 
             if (uri != null)
             {
-                return await GetDownloadResultUtility.GetDownloadResultAsync(_client, identity, uri, settings, logger, token);
+                return await GetDownloadResultUtility.GetDownloadResultAsync(
+                    _client,
+                    identity,
+                    uri,
+                    settings,
+                    lowercase: true,
+                    logger: logger,
+                    token: token);
             }
 
             return new DownloadResourceResult(DownloadResourceResultStatus.NotFound);

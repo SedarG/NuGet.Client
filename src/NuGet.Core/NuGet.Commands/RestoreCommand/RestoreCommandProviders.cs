@@ -77,14 +77,14 @@ namespace NuGet.Commands
         public SourceCacheContext CacheContext { get; }
 
         public static RestoreCommandProviders Create(
-            string globalFolderPath,
-            IEnumerable<string> fallbackPackageFolderPaths,
+            VersionPackageFolder globalFolder,
+            IEnumerable<VersionPackageFolder> fallbackPackageFolders,
             IEnumerable<SourceRepository> sources,
             SourceCacheContext cacheContext,
             ILogger log)
         {
-            var globalPackages = new NuGetv3LocalRepository(globalFolderPath);
-            var globalPackagesSource = Repository.Factory.GetCoreV3(globalFolderPath, FeedType.FileSystemV3);
+            var globalPackages = new NuGetv3LocalRepository(globalFolder);
+            var globalPackagesSource = Repository.Factory.GetCoreV3(globalFolder);
 
             var localProviders = new List<IRemoteDependencyProvider>()
             {
@@ -93,16 +93,16 @@ namespace NuGet.Commands
             };
 
             // Add fallback sources as local providers also
-            var fallbackPackageFolders = new List<NuGetv3LocalRepository>();
+            var fallbackPackageFolderRepositories = new List<NuGetv3LocalRepository>();
 
-            foreach (var path in fallbackPackageFolderPaths)
+            foreach (var fallbackFolder in fallbackPackageFolders)
             {
-                var fallbackRepository = new NuGetv3LocalRepository(path);
-                var fallbackSource = Repository.Factory.GetCoreV3(path, FeedType.FileSystemV3);
+                var fallbackRepository = new NuGetv3LocalRepository(fallbackFolder);
+                var fallbackSource = Repository.Factory.GetCoreV3(fallbackFolder);
 
                 var provider = new SourceRepositoryDependencyProvider(fallbackSource, log, cacheContext, ignoreFailedSources: false, ignoreWarning: false);
 
-                fallbackPackageFolders.Add(fallbackRepository);
+                fallbackPackageFolderRepositories.Add(fallbackRepository);
                 localProviders.Add(provider);
             }
 
@@ -114,7 +114,7 @@ namespace NuGet.Commands
                 remoteProviders.Add(provider);
             }
 
-            return new RestoreCommandProviders(globalPackages, fallbackPackageFolders, localProviders, remoteProviders, cacheContext);
+            return new RestoreCommandProviders(globalPackages, fallbackPackageFolderRepositories, localProviders, remoteProviders, cacheContext);
         }
 
         public void Dispose()

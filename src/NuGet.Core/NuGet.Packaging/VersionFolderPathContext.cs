@@ -8,14 +8,14 @@ namespace NuGet.Packaging
     public class VersionFolderPathContext
     {
         public PackageIdentity Package { get; }
-        public string PackagesDirectory { get; }
+        public VersionPackageFolder Folder { get; }
         public ILogger Logger { get; }
         public PackageSaveMode PackageSaveMode { get; }
         public XmlDocFileSaveMode XmlDocFileSaveMode { get; set; }
 
         public VersionFolderPathContext(
             PackageIdentity package,
-            string packagesDirectory,
+            VersionPackageFolder folder,
             ILogger logger,
             PackageSaveMode packageSaveMode,
             XmlDocFileSaveMode xmlDocFileSaveMode)
@@ -25,12 +25,17 @@ namespace NuGet.Packaging
                 throw new ArgumentNullException(nameof(package));
             }
 
-            if (string.IsNullOrEmpty(packagesDirectory))
+            if (folder == null)
+            {
+                throw new ArgumentNullException(nameof(folder));
+            }
+
+            if (string.IsNullOrEmpty(folder.Path))
             {
                 throw new ArgumentException(string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.StringCannotBeNullOrEmpty,
-                    nameof(packagesDirectory)));
+                    nameof(folder.Path)));
             }
 
             if (logger == null)
@@ -39,7 +44,7 @@ namespace NuGet.Packaging
             }
 
             Package = package;
-            PackagesDirectory = packagesDirectory;
+            Folder = folder;
             Logger = logger;
             PackageSaveMode = packageSaveMode;
             XmlDocFileSaveMode = xmlDocFileSaveMode;

@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -20,7 +21,7 @@ namespace NuGet.Commands
             Dictionary<NuGetFramework, RuntimeGraph> runtimeGraphCache,
             ConcurrentDictionary<PackageIdentity, RuntimeGraph> runtimeGraphCacheByPackage)
         {
-            PackagesDirectory = request.PackagesDirectory;
+            Folder = request.Folder;
             ExistingLockFile = existingLockFile;
             RuntimeGraphCache = runtimeGraphCache;
             RuntimeGraphCacheByPackage = runtimeGraphCacheByPackage;
@@ -30,7 +31,7 @@ namespace NuGet.Commands
             XmlDocFileSaveMode = request.XmlDocFileSaveMode;
         }
 
-        public string PackagesDirectory { get; }
+        public VersionPackageFolder Folder { get; }
         public int MaxDegreeOfConcurrency { get; }
         public LockFile ExistingLockFile { get; }
         public PackageSpec Project { get; }

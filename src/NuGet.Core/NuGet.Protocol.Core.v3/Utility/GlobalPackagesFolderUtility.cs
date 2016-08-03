@@ -17,7 +17,7 @@ namespace NuGet.Protocol
 {
     public static class GlobalPackagesFolderUtility
     {
-        public static DownloadResourceResult GetPackage(PackageIdentity packageIdentity, ISettings settings)
+        public static DownloadResourceResult GetPackage(PackageIdentity packageIdentity, ISettings settings, bool lowercase)
         {
             if (packageIdentity == null)
             {
@@ -29,7 +29,7 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(settings));
             }
 
-            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
+            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings, lowercase: lowercase);
             var defaultPackagePathResolver = new VersionFolderPathResolver(globalPackagesFolder);
 
             var hashPath = defaultPackagePathResolver.GetHashPath(packageIdentity.Id, packageIdentity.Version);
@@ -74,6 +74,7 @@ namespace NuGet.Protocol
         public static async Task<DownloadResourceResult> AddPackageAsync(PackageIdentity packageIdentity,
             Stream packageStream,
             ISettings settings,
+            bool lowercase,
             ILogger logger,
             CancellationToken token)
         {
@@ -92,7 +93,7 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(settings));
             }
 
-            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
+            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings, lowercase);
 
             // The following call adds it to the global packages folder.
             // Addition is performed using ConcurrentUtils, such that,
@@ -110,7 +111,7 @@ namespace NuGet.Protocol
                 versionFolderPathContext,
                 token: token);
 
-            var package = GetPackage(packageIdentity, settings);
+            var package = GetPackage(packageIdentity, settings, lowercase);
             Debug.Assert(package.PackageStream.CanSeek);
             Debug.Assert(package.PackageReader != null);
 

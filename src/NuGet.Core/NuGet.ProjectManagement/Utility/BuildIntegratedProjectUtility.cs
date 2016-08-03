@@ -24,7 +24,7 @@ namespace NuGet.ProjectManagement
         /// Get the root path of a package from the global folder.
         /// </summary>
         public static string GetPackagePathFromGlobalSource(
-            string effectiveGlobalPackagesFolder,
+            VersionPackageFolder effectiveGlobalPackagesFolder,
             PackageIdentity identity)
         {
             var pathResolver = new VersionFolderPathResolver(effectiveGlobalPackagesFolder);

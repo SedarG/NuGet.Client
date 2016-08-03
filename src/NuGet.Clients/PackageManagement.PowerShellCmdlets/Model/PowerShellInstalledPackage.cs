@@ -44,7 +44,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                                                              // however since that experience is deprecated we don't
                                                              // care.
                 {
-                    var pathContext = NuGetPathContext.Create(settings);
+                    var pathContext = NuGetPathContext.Create(settings, lowercase: true);
                     fallbackResolver = new FallbackPackagePathResolver(pathContext);
                 }
                 else

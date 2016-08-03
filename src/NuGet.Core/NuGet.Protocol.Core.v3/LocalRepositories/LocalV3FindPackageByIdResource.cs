@@ -29,7 +29,7 @@ namespace NuGet.Protocol
         private readonly string _source;
         private readonly VersionFolderPathResolver _resolver;
 
-        public LocalV3FindPackageByIdResource(PackageSource source)
+        public LocalV3FindPackageByIdResource(PackageSource source, bool lowercase)
         {
             if (source == null)
             {
@@ -39,7 +39,7 @@ namespace NuGet.Protocol
             var rootDirInfo = LocalFolderUtility.GetAndVerifyRootDirectory(source.Source);
 
             _source = rootDirInfo.FullName;
-            _resolver = new VersionFolderPathResolver(_source);
+            _resolver = new VersionFolderPathResolver(_source, lowercase);
         }
 
         public override Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id, CancellationToken token)

@@ -447,12 +447,13 @@ namespace NuGet.Protocol.Core.v3.Tests
                 }
 
                 var path = root + Path.DirectorySeparatorChar + longString;
+                var folder = new VersionPackageFolder(path, lowercase: true);
                 Exception actual = null;
 
                 // Act
                 try
                 {
-                    var packages = LocalFolderUtility.GetPackagesV3(path, testLogger).ToList();
+                    var packages = LocalFolderUtility.GetPackagesV3(folder, testLogger).ToList();
                 }
                 catch (Exception ex)
                 {
@@ -512,12 +513,13 @@ namespace NuGet.Protocol.Core.v3.Tests
                 }
 
                 var path = root + Path.DirectorySeparatorChar + longString;
+                var folder = new VersionPackageFolder(path, lowercase: true);
                 Exception actual = null;
 
                 // Act
                 try
                 {
-                    var package = LocalFolderUtility.GetPackageV3(path, "a", NuGetVersion.Parse("1.0.0"), testLogger);
+                    var package = LocalFolderUtility.GetPackageV3(folder, "a", NuGetVersion.Parse("1.0.0"), testLogger);
                 }
                 catch (Exception ex)
                 {
@@ -597,8 +599,10 @@ namespace NuGet.Protocol.Core.v3.Tests
                 SimpleTestPackageUtility.CreateFolderFeedV2(root, new PackageIdentity("b", NuGetVersion.Parse("1.0.0")));
                 SimpleTestPackageUtility.CreateFolderFeedV2(root, new PackageIdentity("c", NuGetVersion.Parse("1.0.0")));
 
+                var folder = new VersionPackageFolder(root, lowercase: true);
+
                 // Act
-                var packages = LocalFolderUtility.GetPackagesV3(root, testLogger);
+                var packages = LocalFolderUtility.GetPackagesV3(folder, testLogger);
 
                 // Assert
                 Assert.Equal(0, packages.Count());
@@ -617,8 +621,10 @@ namespace NuGet.Protocol.Core.v3.Tests
                 await SimpleTestPackageUtility.CreateFolderFeedV3(root, new PackageIdentity("b", NuGetVersion.Parse("1.0.0")));
                 await SimpleTestPackageUtility.CreateFolderFeedV3(root, new PackageIdentity("c", NuGetVersion.Parse("1.0.0")));
 
+                var folder = new VersionPackageFolder(root, lowercase: true);
+
                 // Act
-                var packages = LocalFolderUtility.GetPackagesV3(root, testLogger)
+                var packages = LocalFolderUtility.GetPackagesV3(folder, testLogger)
                     .OrderBy(p => p.Identity.Id, StringComparer.OrdinalIgnoreCase)
                     .ThenBy(p => p.Identity.Version)
                     .ToList();
@@ -848,8 +854,10 @@ namespace NuGet.Protocol.Core.v3.Tests
                 await SimpleTestPackageUtility.CreateFolderFeedV3(root, b);
                 await SimpleTestPackageUtility.CreateFolderFeedV3(root, c);
 
+                var folder = new VersionPackageFolder(root, lowercase: true);
+
                 // Act
-                var foundA = LocalFolderUtility.GetPackageV3(root, a, testLogger);
+                var foundA = LocalFolderUtility.GetPackageV3(folder, a, testLogger);
 
                 // Assert
                 Assert.Equal(a, foundA.Identity);
@@ -874,8 +882,10 @@ namespace NuGet.Protocol.Core.v3.Tests
                 await SimpleTestPackageUtility.CreateFolderFeedV3(root, b);
                 await SimpleTestPackageUtility.CreateFolderFeedV3(root, c);
 
+                var folder = new VersionPackageFolder(root, lowercase: true);
+
                 // Act
-                var foundA = LocalFolderUtility.GetPackageV3(root, a, testLogger);
+                var foundA = LocalFolderUtility.GetPackageV3(folder, a, testLogger);
 
                 // Assert
                 Assert.Null(foundA);
@@ -890,9 +900,10 @@ namespace NuGet.Protocol.Core.v3.Tests
                 // Arrange
                 var testLogger = new TestLogger();
                 var a = new PackageIdentity("a", NuGetVersion.Parse("1.0.0"));
+                var folder = new VersionPackageFolder(root, lowercase: true);
 
                 // Act
-                var foundA = LocalFolderUtility.GetPackageV3(root, a, testLogger);
+                var foundA = LocalFolderUtility.GetPackageV3(folder, a, testLogger);
 
                 // Assert
                 Assert.Null(foundA);
@@ -907,9 +918,10 @@ namespace NuGet.Protocol.Core.v3.Tests
                 // Arrange
                 var testLogger = new TestLogger();
                 var a = new PackageIdentity("a", NuGetVersion.Parse("1.0.0"));
+                var folder = new VersionPackageFolder(Path.Combine(root, "missing"), lowercase: true);
 
                 // Act
-                var foundA = LocalFolderUtility.GetPackageV3(Path.Combine(root, "missing"), a, testLogger);
+                var foundA = LocalFolderUtility.GetPackageV3(folder, a, testLogger);
 
                 // Assert
                 Assert.Null(foundA);
@@ -923,9 +935,10 @@ namespace NuGet.Protocol.Core.v3.Tests
             {
                 // Arrange
                 var testLogger = new TestLogger();
+                var folder = new VersionPackageFolder(root, lowercase: true);
 
                 // Act
-                var packages = LocalFolderUtility.GetPackagesV3(root, testLogger).ToList();
+                var packages = LocalFolderUtility.GetPackagesV3(folder, testLogger).ToList();
 
                 // Assert
                 Assert.Equal(0, packages.Count);
@@ -940,9 +953,10 @@ namespace NuGet.Protocol.Core.v3.Tests
             {
                 // Arrange
                 var testLogger = new TestLogger();
+                var folder = new VersionPackageFolder(Path.Combine(root, "missing"), lowercase: true);
 
                 // Act
-                var packages = LocalFolderUtility.GetPackagesV3(Path.Combine(root, "missing"), testLogger).ToList();
+                var packages = LocalFolderUtility.GetPackagesV3(folder, testLogger).ToList();
 
                 // Assert
                 Assert.Equal(0, packages.Count);
@@ -957,9 +971,10 @@ namespace NuGet.Protocol.Core.v3.Tests
             {
                 // Arrange
                 var testLogger = new TestLogger();
+                var folder = new VersionPackageFolder(root, lowercase: true);
 
                 // Act
-                var packages = LocalFolderUtility.GetPackagesV3(root, "a", testLogger).ToList();
+                var packages = LocalFolderUtility.GetPackagesV3(folder, "a", testLogger).ToList();
 
                 // Assert
                 Assert.Equal(0, packages.Count);
@@ -974,9 +989,10 @@ namespace NuGet.Protocol.Core.v3.Tests
             {
                 // Arrange
                 var testLogger = new TestLogger();
+                var folder = new VersionPackageFolder(root, lowercase: true);
 
                 // Act
-                var packages = LocalFolderUtility.GetPackagesV3(root, "a", testLogger).ToList();
+                var packages = LocalFolderUtility.GetPackagesV3(folder, "a", testLogger).ToList();
 
                 // Assert
                 Assert.Equal(0, packages.Count);
@@ -1092,11 +1108,13 @@ namespace NuGet.Protocol.Core.v3.Tests
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3(root, identity);
 
+                var folder = new VersionPackageFolder(root, lowercase: true);
+
                 // Act
-                var findPackage = LocalFolderUtility.GetPackageV3(root, "a", version, testLogger);
-                var findPackageNormalized = LocalFolderUtility.GetPackageV3(root, "a", normalizedVersion, testLogger);
-                var findById = LocalFolderUtility.GetPackagesV3(root, "a", testLogger).Single();
-                var findAll = LocalFolderUtility.GetPackagesV3(root, testLogger).Single();
+                var findPackage = LocalFolderUtility.GetPackageV3(folder, "a", version, testLogger);
+                var findPackageNormalized = LocalFolderUtility.GetPackageV3(folder, "a", normalizedVersion, testLogger);
+                var findById = LocalFolderUtility.GetPackagesV3(folder, "a", testLogger).Single();
+                var findAll = LocalFolderUtility.GetPackagesV3(folder, testLogger).Single();
 
                 // Assert
                 Assert.Equal(identity, findPackage.Identity);
@@ -1121,11 +1139,13 @@ namespace NuGet.Protocol.Core.v3.Tests
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3(root, normalizedIdentity);
 
+                var folder = new VersionPackageFolder(root, lowercase: true);
+
                 // Act
-                var findPackage = LocalFolderUtility.GetPackageV3(root, "a", version, testLogger);
-                var findPackageNormalized = LocalFolderUtility.GetPackageV3(root, "a", normalizedVersion, testLogger);
-                var findById = LocalFolderUtility.GetPackagesV3(root, "a", testLogger).Single();
-                var findAll = LocalFolderUtility.GetPackagesV3(root, testLogger).Single();
+                var findPackage = LocalFolderUtility.GetPackageV3(folder, "a", version, testLogger);
+                var findPackageNormalized = LocalFolderUtility.GetPackageV3(folder, "a", normalizedVersion, testLogger);
+                var findById = LocalFolderUtility.GetPackagesV3(folder, "a", testLogger).Single();
+                var findAll = LocalFolderUtility.GetPackagesV3(folder, testLogger).Single();
 
                 // Assert
                 Assert.Equal(identity, findPackage.Identity);

@@ -21,6 +21,7 @@ namespace NuGet.Protocol
            PackageIdentity identity,
            Uri uri,
            ISettings settings,
+           bool lowercase,
            ILogger logger,
            CancellationToken token)
         {
@@ -28,7 +29,7 @@ namespace NuGet.Protocol
             // Now, check if it is in the global packages folder, before, getting the package stream
 
             // TODO: This code should respect no_cache settings and not write or read packages from the global packages folder
-            var packageFromGlobalPackages = GlobalPackagesFolderUtility.GetPackage(identity, settings);
+            var packageFromGlobalPackages = GlobalPackagesFolderUtility.GetPackage(identity, settings, lowercase);
 
             if (packageFromGlobalPackages != null)
             {
@@ -55,6 +56,7 @@ namespace NuGet.Protocol
                                 identity,
                                 packageStream,
                                 settings,
+                                lowercase,
                                 logger,
                                 token);
                         },

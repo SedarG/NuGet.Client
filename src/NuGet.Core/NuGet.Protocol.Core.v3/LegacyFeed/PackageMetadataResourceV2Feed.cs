@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol
@@ -13,13 +14,13 @@ namespace NuGet.Protocol
     public class PackageMetadataResourceV2Feed : PackageMetadataResource
     {
         private readonly HttpSource _httpSource;
-        private readonly Configuration.PackageSource _packageSource;
+        private readonly PackageSource _packageSource;
         private readonly V2FeedParser _feedParser;
 
         public PackageMetadataResourceV2Feed(
             HttpSourceResource httpSourceResource,
             string baseAddress,
-            Configuration.PackageSource packageSource)
+            PackageSource packageSource)
         {
             if (httpSourceResource == null)
             {

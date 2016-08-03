@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol
@@ -16,9 +17,15 @@ namespace NuGet.Protocol
         {
             FindLocalPackagesResource curResource = null;
 
-            if (await source.GetFeedType(token) == FeedType.FileSystemV3)
+            var feedType = await source.GetFeedType(token);
+            if (feedType == FeedType.FileSystemV3 ||
+                feedType == FeedType.FileSystemV3OriginalCase)
             {
-                curResource = new FindLocalPackagesResourceV3(source.PackageSource.Source);
+                var folder = new VersionPackageFolder(
+                    source.PackageSource.Source,
+                    lowercase: feedType != FeedType.FileSystemV3OriginalCase);
+
+                curResource = new FindLocalPackagesResourceV3(folder);
             }
 
             return new Tuple<bool, INuGetResource>(curResource != null, curResource);

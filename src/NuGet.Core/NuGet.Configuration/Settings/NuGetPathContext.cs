@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using NuGet.Common;
 
 namespace NuGet.Configuration
@@ -9,12 +10,12 @@ namespace NuGet.Configuration
         /// <summary>
         /// Fallback package folders. There many be zero or more of these.
         /// </summary>
-        public IReadOnlyList<string> FallbackPackageFolders { get; internal set; }
+        public IReadOnlyList<VersionPackageFolder> FallbackPackageFolders { get; internal set; }
 
         /// <summary>
         /// User global packages folder.
         /// </summary>
-        public string UserPackageFolder { get; internal set; }
+        public VersionPackageFolder UserPackageFolder { get; internal set; }
 
         /// <summary>
         /// User level http cache.
@@ -25,18 +26,25 @@ namespace NuGet.Configuration
         /// Load paths from already loaded settings.
         /// </summary>
         /// <param name="settings">NuGet.Config settings.</param>
-        public static NuGetPathContext Create(ISettings settings)
+        /// <param name="lowercase">
+        /// Whether or not the user packages folder has lowercase ID and version folder names.
+        /// </param>
+        /// <returns>The NuGet path context.</returns>
+        public static NuGetPathContext Create(ISettings settings, bool lowercase)
         {
             if (settings == null)
             {
                 throw new ArgumentNullException(nameof(settings));
             }
 
+            var userPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings, lowercase);
+            var fallbackPackageFolders = SettingsUtility.GetFallbackPackageFolders(settings);
+
             // Create paths using SettingsUtility
             return new NuGetPathContext()
             {
-                FallbackPackageFolders = SettingsUtility.GetFallbackPackageFolders(settings),
-                UserPackageFolder = SettingsUtility.GetGlobalPackagesFolder(settings),
+                FallbackPackageFolders = fallbackPackageFolders,
+                UserPackageFolder = userPackagesFolder,
                 HttpCacheFolder = SettingsUtility.GetHttpCacheFolder()
             };
         }
@@ -46,7 +54,11 @@ namespace NuGet.Configuration
         /// be discovered based on this path. The machine wide config will also be loaded.
         /// </summary>
         /// <param name="settingsRoot">Root directory of the solution or project.</param>
-        public static NuGetPathContext Create(string settingsRoot)
+        /// <param name="lowercase">
+        /// Whether or not the user packages folder has lowercase ID and version folder names.
+        /// </param>
+        /// <returns>The NuGet path context.</returns>
+        public static NuGetPathContext Create(string settingsRoot, bool lowercase)
         {
             if (settingsRoot == null)
             {
@@ -54,7 +66,7 @@ namespace NuGet.Configuration
             }
 
             var settings = Settings.LoadDefaultSettings(settingsRoot);
-            return Create(settings);
+            return Create(settings, lowercase);
         }
     }
 }

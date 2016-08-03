@@ -552,7 +552,7 @@ namespace NuGet.Protocol
         /// <summary>
         /// Retrieve a single package from a v3 version folder.
         /// </summary>
-        public static LocalPackageInfo GetPackageV3(string root, string id, NuGetVersion version, ILogger log)
+        public static LocalPackageInfo GetPackageV3(VersionPackageFolder root, string id, NuGetVersion version, ILogger log)
         {
             if (root == null)
             {
@@ -580,7 +580,7 @@ namespace NuGet.Protocol
         /// <summary>
         /// Retrieve a package from a v3 feed.
         /// </summary>
-        public static LocalPackageInfo GetPackageV3(string root, PackageIdentity identity, ILogger log)
+        public static LocalPackageInfo GetPackageV3(VersionPackageFolder root, PackageIdentity identity, ILogger log)
         {
             if (root == null)
             {
@@ -598,9 +598,9 @@ namespace NuGet.Protocol
             }
 
             // Verify the root path is a valid path.
-            var rootDirInfo = GetAndVerifyRootDirectory(root);
+            var rootDirInfo = GetAndVerifyRootDirectory(root.Path);
 
-            var pathResolver = new VersionFolderPathResolver(rootDirInfo.FullName);
+            var pathResolver = new VersionFolderPathResolver(rootDirInfo.FullName, root.Lowercase);
 
             // Verify the neccessary files exist
             var nupkgPath = pathResolver.GetPackageFilePath(identity.Id, identity.Version);
@@ -813,7 +813,7 @@ namespace NuGet.Protocol
         /// Discover all nupkgs from a v3 folder.
         /// </summary>
         /// <param name="root">Folder root.</param>
-        public static IEnumerable<LocalPackageInfo> GetPackagesV3(string root, ILogger log)
+        public static IEnumerable<LocalPackageInfo> GetPackagesV3(VersionPackageFolder root, ILogger log)
         {
             if (root == null)
             {
@@ -826,7 +826,7 @@ namespace NuGet.Protocol
             }
 
             // Validate teh root path
-            DirectoryInfo rootDirectoryInfo = GetAndVerifyRootDirectory(root);
+            DirectoryInfo rootDirectoryInfo = GetAndVerifyRootDirectory(root.Path);
 
             if (!rootDirectoryInfo.Exists)
             {
@@ -849,9 +849,9 @@ namespace NuGet.Protocol
         /// <summary>
         /// Discover nupkgs from a v3 local folder.
         /// </summary>
-        /// <param name="root">Folder root.</param>
+        /// <param name="root">The version package folder.</param>
         /// <param name="id">Package id or package id prefix.</param>
-        public static IEnumerable<LocalPackageInfo> GetPackagesV3(string root, string id, ILogger log)
+        public static IEnumerable<LocalPackageInfo> GetPackagesV3(VersionPackageFolder root, string id, ILogger log)
         {
             if (root == null)
             {
@@ -869,7 +869,7 @@ namespace NuGet.Protocol
             }
 
             // Check for package files one level deep.
-            DirectoryInfo rootDirectoryInfo = GetAndVerifyRootDirectory(root);
+            DirectoryInfo rootDirectoryInfo = GetAndVerifyRootDirectory(root.Path);
 
             var idRoot = new DirectoryInfo(Path.Combine(rootDirectoryInfo.FullName, id));
             if (!idRoot.Exists)

@@ -26,9 +26,12 @@ namespace NuGet.Protocol
 
             // Default to v3 if the type is unknown
             if (feedType == FeedType.FileSystemV3
+                || feedType == FeedType.FileSystemV3OriginalCase
                 || feedType == FeedType.FileSystemUnknown)
             {
-                resource = new LocalV3FindPackageByIdResource(source.PackageSource);
+                resource = new LocalV3FindPackageByIdResource(
+                    source.PackageSource,
+                    lowercase: feedType != FeedType.FileSystemV3OriginalCase);
             }
 
             return Tuple.Create(resource != null, resource);

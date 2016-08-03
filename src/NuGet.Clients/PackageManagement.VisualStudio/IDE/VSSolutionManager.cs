@@ -255,13 +255,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         return false;
                     }
 
-                    // Solution is open and not saved. And, only contains project.json based projects.
-                    // Check if globalPackagesFolder is a full path. If so, solution is available.
-
-                    var settings = ServiceLocator.GetInstance<Configuration.ISettings>();
-                    var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
-
-                    return Path.IsPathRooted(globalPackagesFolder);
+                    return true;
                 });
             }
         }

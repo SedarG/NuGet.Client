@@ -52,11 +52,11 @@ namespace NuGet.Protocol.Core.v3.Tests
                     new FindLocalPackagesResourcePackagesConfig(rootPackagesConfig),
                     new FindLocalPackagesResourceUnzipped(rootUnzip),
                     new FindLocalPackagesResourceV2(rootV2),
-                    new FindLocalPackagesResourceV3(rootV3),
+                    new FindLocalPackagesResourceV3(new VersionPackageFolder(rootV3, lowercase: true)),
                     new FindLocalPackagesResourcePackagesConfig(UriUtility.CreateSourceUri(rootPackagesConfig).AbsoluteUri),
                     new FindLocalPackagesResourceUnzipped(UriUtility.CreateSourceUri(rootUnzip).AbsoluteUri),
                     new FindLocalPackagesResourceV2(UriUtility.CreateSourceUri(rootV2).AbsoluteUri),
-                    new FindLocalPackagesResourceV3(UriUtility.CreateSourceUri(rootV3).AbsoluteUri)
+                    new FindLocalPackagesResourceV3(new VersionPackageFolder(UriUtility.CreateSourceUri(rootV3).AbsoluteUri, lowercase: true))
                 };
 
                 foreach (var resource in resources)
@@ -88,14 +88,14 @@ namespace NuGet.Protocol.Core.v3.Tests
                     new FindLocalPackagesResourcePackagesConfig(emptyDir),
                     new FindLocalPackagesResourceUnzipped(doesNotExist),
                     new FindLocalPackagesResourceV2(doesNotExist),
-                    new FindLocalPackagesResourceV3(doesNotExist),
+                    new FindLocalPackagesResourceV3(new VersionPackageFolder(doesNotExist, lowercase: true)),
                     new FindLocalPackagesResourceUnzipped(emptyDir),
                     new FindLocalPackagesResourceV2(emptyDir),
-                    new FindLocalPackagesResourceV3(emptyDir),
+                    new FindLocalPackagesResourceV3(new VersionPackageFolder(emptyDir, lowercase: true)),
                     new FindLocalPackagesResourcePackagesConfig(UriUtility.CreateSourceUri(doesNotExist).AbsoluteUri),
                     new FindLocalPackagesResourceUnzipped(UriUtility.CreateSourceUri(doesNotExist).AbsoluteUri),
                     new FindLocalPackagesResourceV2(UriUtility.CreateSourceUri(doesNotExist).AbsoluteUri),
-                    new FindLocalPackagesResourceV3(UriUtility.CreateSourceUri(doesNotExist).AbsoluteUri),
+                    new FindLocalPackagesResourceV3(new VersionPackageFolder(UriUtility.CreateSourceUri(doesNotExist).AbsoluteUri, lowercase: true)),
                 };
 
                 foreach (var resource in resources)
@@ -138,11 +138,11 @@ namespace NuGet.Protocol.Core.v3.Tests
                     new FindLocalPackagesResourcePackagesConfig(rootPackagesConfig),
                     new FindLocalPackagesResourceUnzipped(rootUnzip),
                     new FindLocalPackagesResourceV2(rootV2),
-                    new FindLocalPackagesResourceV3(rootV3),
+                    new FindLocalPackagesResourceV3(new VersionPackageFolder(rootV3, lowercase: true)),
                     new FindLocalPackagesResourcePackagesConfig(UriUtility.CreateSourceUri(rootPackagesConfig).AbsoluteUri),
                     new FindLocalPackagesResourceUnzipped(UriUtility.CreateSourceUri(rootUnzip).AbsoluteUri),
                     new FindLocalPackagesResourceV2(UriUtility.CreateSourceUri(rootV2).AbsoluteUri),
-                    new FindLocalPackagesResourceV3(UriUtility.CreateSourceUri(rootV3).AbsoluteUri)
+                    new FindLocalPackagesResourceV3(new VersionPackageFolder(UriUtility.CreateSourceUri(rootV3).AbsoluteUri, lowercase: true))
                 };
 
                 foreach (var resource in resources)
@@ -184,11 +184,11 @@ namespace NuGet.Protocol.Core.v3.Tests
                     new FindLocalPackagesResourcePackagesConfig(rootPackagesConfig),
                     new FindLocalPackagesResourceUnzipped(rootUnzip),
                     new FindLocalPackagesResourceV2(rootV2),
-                    new FindLocalPackagesResourceV3(rootV3),
+                    new FindLocalPackagesResourceV3(new VersionPackageFolder(rootV3, lowercase: true)),
                     new FindLocalPackagesResourcePackagesConfig(UriUtility.CreateSourceUri(rootPackagesConfig).AbsoluteUri),
                     new FindLocalPackagesResourceUnzipped(UriUtility.CreateSourceUri(rootUnzip).AbsoluteUri),
                     new FindLocalPackagesResourceV2(UriUtility.CreateSourceUri(rootV2).AbsoluteUri),
-                    new FindLocalPackagesResourceV3(UriUtility.CreateSourceUri(rootV3).AbsoluteUri)
+                    new FindLocalPackagesResourceV3(new VersionPackageFolder(UriUtility.CreateSourceUri(rootV3).AbsoluteUri, lowercase: true))
                 };
 
                 foreach (var resource in resources)

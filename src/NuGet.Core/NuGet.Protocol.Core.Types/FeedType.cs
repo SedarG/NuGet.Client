@@ -23,7 +23,7 @@
         FileSystemV2 = 1 << 2,
 
         /// <summary>
-        /// Version folder structure used for project.json
+        /// Version folder structure used for project.json with ID and version folders lowercase.
         /// </summary>
         FileSystemV3 = 1 << 3,
 
@@ -36,6 +36,11 @@
         /// Packages.config packages folder format
         /// </summary>
         FileSystemPackagesConfig = 1 << 5,
+
+        /// <summary>
+        /// Version folder structure used for project.json with ID and version folders original case.
+        /// </summary>
+        FileSystemV3OriginalCase = 1 << 6,
 
         /// <summary>
         /// Undetermined folder type. Occurs when the folder is empty

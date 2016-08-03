@@ -54,7 +54,7 @@ namespace NuGet.Packaging.Test
                         packageStream.CopyToAsync,
                         new VersionFolderPathContext(
                             new PackageIdentity("a", NuGetVersion.Parse("1.0.0")),
-                            root,
+                            new VersionPackageFolder(root, lowercase: true),
                             NullLogger.Instance,
                             packageSaveMode: PackageSaveMode.Defaultv3,
                             xmlDocFileSaveMode: XmlDocFileSaveMode.None),
@@ -93,7 +93,7 @@ namespace NuGet.Packaging.Test
                         packageStream.CopyToAsync,
                         new VersionFolderPathContext(
                             new PackageIdentity("a", NuGetVersion.Parse("1.0.0")),
-                            root,
+                            new VersionPackageFolder(root, lowercase: true),
                             NullLogger.Instance,
                             packageSaveMode: PackageSaveMode.Defaultv3,
                             xmlDocFileSaveMode: XmlDocFileSaveMode.None),
@@ -900,7 +900,7 @@ namespace NuGet.Packaging.Test
             // Arrange
             using (var root = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var resolver = new VersionFolderPathResolver(root);
+                var resolver = new VersionFolderPathResolver(root, lowercase: true);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
                 var packageFileInfo = await TestPackages.GeneratePackageAsync(
                    root,
@@ -916,7 +916,7 @@ namespace NuGet.Packaging.Test
                         packageStream.CopyToAsync,
                         new VersionFolderPathContext(
                             identity,
-                            root,
+                            new VersionPackageFolder(root, lowercase: true),
                             NullLogger.Instance,
                             packageSaveMode: PackageSaveMode.Nupkg | PackageSaveMode.Files,
                             xmlDocFileSaveMode: XmlDocFileSaveMode.None),
@@ -936,7 +936,7 @@ namespace NuGet.Packaging.Test
             // Arrange
             using (var root = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var resolver = new VersionFolderPathResolver(root);
+                var resolver = new VersionFolderPathResolver(root, lowercase: true);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
                 var packageFileInfo = await TestPackages.GeneratePackageAsync(
                    root,
@@ -952,7 +952,7 @@ namespace NuGet.Packaging.Test
                         packageStream.CopyToAsync,
                         new VersionFolderPathContext(
                             identity,
-                            root,
+                            new VersionPackageFolder(root, lowercase: true),
                             NullLogger.Instance,
                             packageSaveMode: PackageSaveMode.Nuspec | PackageSaveMode.Files,
                             xmlDocFileSaveMode: XmlDocFileSaveMode.None),
@@ -973,7 +973,7 @@ namespace NuGet.Packaging.Test
             // Arrange
             using (var root = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var resolver = new VersionFolderPathResolver(root);
+                var resolver = new VersionFolderPathResolver(root, lowercase: true);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
                 var packageFileInfo = await TestPackages.GeneratePackageAsync(
                    root,
@@ -989,7 +989,7 @@ namespace NuGet.Packaging.Test
                         packageStream.CopyToAsync,
                         new VersionFolderPathContext(
                             identity,
-                            root,
+                            new VersionPackageFolder(root, lowercase: true),
                             NullLogger.Instance,
                             packageSaveMode: PackageSaveMode.Nupkg | PackageSaveMode.Nuspec,
                             xmlDocFileSaveMode: XmlDocFileSaveMode.None),

@@ -33,8 +33,8 @@ namespace NuGet.PackageManagement
             BuildIntegratedNuGetProject project,
             ExternalProjectReferenceContext context,
             IEnumerable<SourceRepository> sources,
-            string effectiveGlobalPackagesFolder,
-            IEnumerable<string> fallbackPackageFolders,
+            VersionPackageFolder effectiveGlobalPackagesFolder,
+            IEnumerable<VersionPackageFolder> fallbackPackageFolders,
             CancellationToken token)
         {
             return await RestoreAsync(
@@ -54,8 +54,8 @@ namespace NuGet.PackageManagement
             BuildIntegratedNuGetProject project,
             ExternalProjectReferenceContext context,
             IEnumerable<SourceRepository> sources,
-            string effectiveGlobalPackagesFolder,
-            IEnumerable<string> fallbackPackageFolders,
+            VersionPackageFolder effectiveGlobalPackagesFolder,
+            IEnumerable<VersionPackageFolder> fallbackPackageFolders,
             Action<SourceCacheContext> cacheContextModifier,
             CancellationToken token)
         {
@@ -275,11 +275,11 @@ namespace NuGet.PackageManagement
         /// <remarks>Floating versions and project.json files with supports require a full restore.</remarks>
         public static bool IsRestoreRequired(
             IReadOnlyList<BuildIntegratedNuGetProject> projects,
-            IReadOnlyList<string> packageFolderPaths,
+            IReadOnlyList<VersionPackageFolder> packageFolderPaths,
             ExternalProjectReferenceContext referenceContext)
         {
             var packagesChecked = new HashSet<PackageIdentity>();
-            var pathResolvers = packageFolderPaths.Select(path => new VersionFolderPathResolver(path));
+            var pathResolvers = packageFolderPaths.Select(folder => new VersionFolderPathResolver(folder));
 
             // Validate project.lock.json files
             foreach (var project in projects)

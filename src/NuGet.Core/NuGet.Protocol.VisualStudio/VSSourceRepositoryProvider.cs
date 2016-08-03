@@ -18,7 +18,7 @@ namespace NuGet.Protocol.VisualStudio
     {
 
         // TODO: add support for reloading sources when changes occur
-        private readonly Configuration.IPackageSourceProvider _packageSourceProvider;
+        private readonly IPackageSourceProvider _packageSourceProvider;
         private IEnumerable<Lazy<INuGetResourceProvider>> _resourceProviders;
         private List<SourceRepository> _repositories;
 
@@ -33,15 +33,15 @@ namespace NuGet.Protocol.VisualStudio
         /// Public importing constructor for SourceRepositoryProvider
         /// </summary>
         [ImportingConstructor]
-        public ExtensibleSourceRepositoryProvider([ImportMany] IEnumerable<Lazy<INuGetResourceProvider>> resourceProviders, [Import] Configuration.ISettings settings)
-            : this(new Configuration.PackageSourceProvider(settings, migratePackageSources: null), resourceProviders)
+        public ExtensibleSourceRepositoryProvider([ImportMany] IEnumerable<Lazy<INuGetResourceProvider>> resourceProviders, [Import] ISettings settings)
+            : this(new PackageSourceProvider(settings, migratePackageSources: null), resourceProviders)
         {
         }
 
         /// <summary>
         /// Non-MEF constructor
         /// </summary>
-        public ExtensibleSourceRepositoryProvider(Configuration.IPackageSourceProvider packageSourceProvider, IEnumerable<Lazy<INuGetResourceProvider>> resourceProviders)
+        public ExtensibleSourceRepositoryProvider(IPackageSourceProvider packageSourceProvider, IEnumerable<Lazy<INuGetResourceProvider>> resourceProviders)
         {
             _packageSourceProvider = packageSourceProvider;
             _resourceProviders = Repository.Provider.GetVisualStudio().Concat(resourceProviders);
@@ -79,7 +79,7 @@ namespace NuGet.Protocol.VisualStudio
             return new SourceRepository(source, _resourceProviders, type);
         }
 
-        public Configuration.IPackageSourceProvider PackageSourceProvider
+        public IPackageSourceProvider PackageSourceProvider
         {
             get { return _packageSourceProvider; }
         }

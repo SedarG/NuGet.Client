@@ -23,7 +23,9 @@ namespace NuGet.Packaging
 
         }
 
-        public FallbackPackagePathResolver(string userPackageFolder, IEnumerable<string> fallbackPackageFolders)
+        public FallbackPackagePathResolver(
+            VersionPackageFolder userPackageFolder,
+            IEnumerable<VersionPackageFolder> fallbackPackageFolders)
         {
             if (fallbackPackageFolders == null)
             {
@@ -35,33 +37,34 @@ namespace NuGet.Packaging
                 throw new ArgumentNullException(nameof(userPackageFolder));
             }
 
-            var packageFolders = new List<string>();
+            var packageFolders = new List<VersionPackageFolder>();
 
             // The user's packages folder may not exist, this is expected if the fallback
             // folders contain all packages.
-            if (Directory.Exists(userPackageFolder))
+            if (Directory.Exists(userPackageFolder.Path))
             {
                 packageFolders.Add(userPackageFolder);
             }
 
             // All fallback folders must exist
-            foreach (var path in fallbackPackageFolders)
+            foreach (var fallbackFolder in fallbackPackageFolders)
             {
-                if (!Directory.Exists(path))
+                if (!Directory.Exists(fallbackFolder.Path))
                 {
                     var message = string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.FallbackFolderNotFound,
-                        path);
+                        fallbackFolder);
 
                     throw new PackagingException(message);
                 }
 
-                packageFolders.Add(path);
+                packageFolders.Add(fallbackFolder);
             }
 
             // Create path resolvers for each source.
-            _pathResolvers = PathUtility.GetUniquePathsBasedOnOS(packageFolders)
+            _pathResolvers = PathUtility
+                .GetUniqueFoldersBasedOnOS(packageFolders)
                 .Select(path => new VersionFolderPathResolver(path))
                 .ToList();
         }

@@ -160,17 +160,18 @@ namespace NuGet.PackageManagement
                     var sources = new List<SourceRepository>();
 
                     // Read package folders from settings
-                    var pathContext = NuGetPathContext.Create(Settings);
-                    var folders = new List<string>();
+                    var pathContext = NuGetPathContext.Create(Settings, lowercase: true);
+
+                    var folders = new List<VersionPackageFolder>();
                     folders.Add(pathContext.UserPackageFolder);
                     folders.AddRange(pathContext.FallbackPackageFolders);
-
+                    
                     foreach (var folder in folders)
                     {
                         // Create a repo for each folder
                         var source = SourceRepositoryProvider.CreateRepository(
-                            new PackageSource(folder),
-                            FeedType.FileSystemV3);
+                            new PackageSource(folder.Path),
+                            folder.Lowercase ? FeedType.FileSystemV3 : FeedType.FileSystemV3OriginalCase);
 
                         sources.Add(source);
                     }
@@ -1939,7 +1940,7 @@ namespace NuGet.PackageManagement
             var logger = new ProjectContextLogger(nuGetProjectContext);
             var buildIntegratedContext = new ExternalProjectReferenceContext(logger);
 
-            var pathContext = NuGetPathContext.Create(Settings);
+            var pathContext = NuGetPathContext.Create(Settings, lowercase: true);
 
             // For installs only use cache entries newer than the current time.
             // This is needed for scenarios where a new package shows up in search
@@ -2117,7 +2118,7 @@ namespace NuGet.PackageManagement
                         restoreResult.LockFile),
                     PackageIdentity.Comparer);
 
-                var pathContext = NuGetPathContext.Create(Settings);
+                var pathContext = NuGetPathContext.Create(Settings, lowercase: true);
 
                 // Find all dependencies in sorted order, then using the order run init.ps1 for only the new packages.
                 foreach (var package in sortedPackages)
@@ -2229,7 +2230,7 @@ namespace NuGet.PackageManagement
                 if (buildIntegratedProject != null)
                 {
                     var packageFolderPath = BuildIntegratedProjectUtility.GetPackagePathFromGlobalSource(
-                                            Configuration.SettingsUtility.GetGlobalPackagesFolder(Settings),
+                                            SettingsUtility.GetGlobalPackagesFolder(Settings, lowercase: true),
                                             nuGetProjectContext.ExecutionContext.DirectInstall);
 
                     if (Directory.Exists(packageFolderPath))

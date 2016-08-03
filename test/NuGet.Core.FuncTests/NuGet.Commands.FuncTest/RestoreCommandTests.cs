@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -417,7 +418,7 @@ namespace NuGet.Commands.FuncTest
                         fileStream.CopyToAsync(stream, 4096, CancellationToken.None),
                         new VersionFolderPathContext(
                             new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0")),
-                            packagesDir,
+                            new VersionPackageFolder(packagesDir, lowercase: true),
                             logger,
                             PackageSaveMode.Defaultv3,
                             XmlDocFileSaveMode.None),
@@ -637,7 +638,7 @@ namespace NuGet.Commands.FuncTest
                 var logger = new TestLogger();
 
                 // Create left over nupkg to simulate a corrupted install
-                var pathResolver = new VersionFolderPathResolver(packagesDir);
+                var pathResolver = new VersionFolderPathResolver(packagesDir, lowercase: true);
                 var nupkgFolder = pathResolver.GetInstallPath("Newtonsoft.Json", new NuGetVersion("7.0.1"));
                 var nupkgPath = pathResolver.GetPackageFilePath("Newtonsoft.Json", new NuGetVersion("7.0.1"));
 
@@ -1344,7 +1345,7 @@ namespace NuGet.Commands.FuncTest
                 var result = await command.ExecuteAsync();
 
                 // Assert
-                var pathResolver = new VersionFolderPathResolver(packagesDir);
+                var pathResolver = new VersionFolderPathResolver(packagesDir, lowercase: true);
                 var nuspecPath = pathResolver.GetManifestFilePath("NuGet.Versioning", new NuGetVersion("1.0.7"));
                 Assert.True(File.Exists(nuspecPath));
             }
@@ -1377,7 +1378,7 @@ namespace NuGet.Commands.FuncTest
                 var result = await command.ExecuteAsync();
 
                 // Assert
-                var pathResolver = new VersionFolderPathResolver(packagesDir);
+                var pathResolver = new VersionFolderPathResolver(packagesDir, lowercase: true);
                 var nuspecPath = pathResolver.GetManifestFilePath("owin", new NuGetVersion("1.0.0"));
                 Assert.True(File.Exists(nuspecPath));
             }
@@ -1919,7 +1920,13 @@ namespace NuGet.Commands.FuncTest
                 context.IgnoreFailedSources = true;
                 var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
-                var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, logger);
+                var provider = RestoreCommandProviders.Create(
+                    new VersionPackageFolder(packagesDir, lowercase: true),
+                    new List<VersionPackageFolder>(),
+                    sources.Select(p => cachingSourceProvider.CreateRepository(p)),
+                    context,
+                    logger);
+
                 var request = new RestoreRequest(spec, provider, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
@@ -1964,7 +1971,12 @@ namespace NuGet.Commands.FuncTest
                 context.IgnoreFailedSources = true;
                 var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
-                var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, logger);
+                var provider = RestoreCommandProviders.Create(
+                    new VersionPackageFolder(packagesDir, lowercase: true),
+                    new List<VersionPackageFolder>(),
+                    sources.Select(p => cachingSourceProvider.CreateRepository(p)),
+                    context,
+                    logger);
                 var request = new RestoreRequest(spec, provider, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");

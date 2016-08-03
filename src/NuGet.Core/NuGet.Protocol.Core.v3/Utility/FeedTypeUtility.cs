@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol
 {
@@ -38,14 +39,16 @@ namespace NuGet.Protocol
                 }
                 else
                 {
+                    var versionPackageFolder = new VersionPackageFolder(path, lowercase: true);
+
                     // Try to determine the actual folder feed type by looking for nupkgs
                     if (LocalFolderUtility.GetNupkgsFromFlatFolder(path, NullLogger.Instance).Any())
                     {
                         type = FeedType.FileSystemV2;
                     }
-                    else if (LocalFolderUtility.GetPackagesV3(path, NullLogger.Instance).Any())
+                    else if (LocalFolderUtility.GetPackagesV3(versionPackageFolder, NullLogger.Instance).Any())
                     {
-                        type = FeedType.FileSystemV3;
+                        type = versionPackageFolder.GetFeedType();
                     }
                 }
             }

@@ -5,7 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Versioning;
 
@@ -22,11 +22,14 @@ namespace NuGet.Repositories
 
         public VersionFolderPathResolver PathResolver { get; }
 
-        public NuGetv3LocalRepository(string path)
+        public NuGetv3LocalRepository(VersionPackageFolder folder)
         {
-            RepositoryRoot = path;
-            PathResolver = new VersionFolderPathResolver(path);
+            Folder = folder;
+            RepositoryRoot = folder.Path;
+            PathResolver = new VersionFolderPathResolver(folder);
         }
+
+        public VersionPackageFolder Folder { get; }
 
         public string RepositoryRoot { get; }
 

@@ -21,11 +21,6 @@ namespace NuGet.DependencyResolver
             _repository = repository;
         }
 
-        public NuGetDependencyResolver(string packagesPath)
-        {
-            _repository = new NuGetv3LocalRepository(packagesPath);
-        }
-
         public bool SupportsType(LibraryDependencyTarget libraryType)
         {
             return (libraryType & LibraryDependencyTarget.Package) == LibraryDependencyTarget.Package;

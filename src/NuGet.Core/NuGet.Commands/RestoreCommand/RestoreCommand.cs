@@ -272,7 +272,7 @@ namespace NuGet.Commands
             IReadOnlyList<NuGetv3LocalRepository> fallbackPackageFolders,
             CancellationToken token)
         {
-            var toolPathResolver = new ToolPathResolver(_request.PackagesDirectory);
+            var toolPathResolver = new ToolPathResolver(userPackageFolder.Folder);
             var results = new List<ToolRestoreResult>();
 
             var localRepositories = new List<NuGetv3LocalRepository>();

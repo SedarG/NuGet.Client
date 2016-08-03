@@ -226,7 +226,7 @@ namespace NuGetConsole
 
         private string GetPackageInstalledPath(PackageIdentity packageIdentity)
         {
-            var nugetPaths = NuGetPathContext.Create(Settings);
+            var nugetPaths = NuGetPathContext.Create(Settings, lowercase: true);
             var fallbackResolver = new FallbackPackagePathResolver(nugetPaths);
             
             // Verify the package exists and return the path. Return null otherwise.

@@ -301,10 +301,10 @@ namespace NuGet.PackageManagement.Test
                 // Setup
                 NuGetPathContext
                     .Setup(x => x.UserPackageFolder)
-                    .Returns(userPackageFolder);
+                    .Returns(() => new VersionPackageFolder(userPackageFolder, lowercase: false));
                 NuGetPathContext
                     .Setup(x => x.FallbackPackageFolders)
-                    .Returns(new string[0]);
+                    .Returns(new VersionPackageFolder[0]);
 
                 NuspecReader
                     .Setup(p => p.GetIdentity())

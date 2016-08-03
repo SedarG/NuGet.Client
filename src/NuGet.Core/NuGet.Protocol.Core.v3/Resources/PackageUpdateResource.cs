@@ -187,7 +187,11 @@ namespace NuGet.Protocol.Core.Types
 
             if (sourceUri.IsFile)
             {
-                await PushPackageToFileSystem(sourceUri, packageToPush, log, token);
+                await PushPackageToFileSystem(
+                    sourceUri,
+                    packageToPush,
+                    log,
+                    token);
             }
             else
             {
@@ -316,7 +320,8 @@ namespace NuGet.Protocol.Core.Types
             return request;
         }
 
-        private async Task PushPackageToFileSystem(Uri sourceUri,
+        private async Task PushPackageToFileSystem(
+            Uri sourceUri,
             string pathToPackage,
             ILogger log,
             CancellationToken token)
@@ -335,13 +340,14 @@ namespace NuGet.Protocol.Core.Types
             }
             else
             {
-                var context = new OfflineFeedAddContext(pathToPackage,
-                    root,
-                    log,
+                var context = new OfflineFeedAddContext(
+                    pathToPackage,
+                    new VersionPackageFolder(root, lowercase: true),
                     throwIfSourcePackageIsInvalid: true,
                     throwIfPackageExistsAndInvalid: false,
                     throwIfPackageExists: false,
-                    expand: true);
+                    expand: true,
+                    logger: log);
                 await OfflineFeedUtility.AddPackageToSource(context, token);
             }
         }
@@ -427,7 +433,9 @@ namespace NuGet.Protocol.Core.Types
             }
             else
             {
-                string packageDirectory = OfflineFeedUtility.GetPackageDirectory(packageIdentity, root);
+                string packageDirectory = OfflineFeedUtility.GetPackageDirectory(
+                    packageIdentity,
+                    new VersionPackageFolder(root, lowercase: true));
                 if (!Directory.Exists(packageDirectory))
                 {
                     throw new ArgumentException(Strings.DeletePackage_NotFound);

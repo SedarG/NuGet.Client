@@ -30,7 +30,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 await SimpleTestPackageUtility.CreateFolderFeedV3(rootV3, a1, a2, b);
 
                 var resourceV2 = new LocalV2FindPackageByIdResource(new PackageSource(rootV2));
-                var resourceV3 = new LocalV3FindPackageByIdResource(new PackageSource(rootV3));
+                var resourceV3 = new LocalV3FindPackageByIdResource(new PackageSource(rootV3), lowercase: true);
 
                 resourceV2.Logger = testLogger;
                 resourceV3.Logger = testLogger;
